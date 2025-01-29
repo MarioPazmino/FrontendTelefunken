@@ -1,0 +1,15 @@
+<div class="dashboard">
+  <h1>Bienvenido, {{ currentPlayer?.name || 'Jugador' }}</h1>
+
+  <!-- Botón para redirigir a la interfaz de juego -->
+  <button (click)="goToGameInterface()">Ir a la Interfaz de Juego</button>
+
+  <button (click)="logout()">Cerrar Sesión</button>
+
+  <h2>Historial de Partidas</h2>
+  <ul>
+    <li *ngFor="let game of playerHistory">
+      {{ game.gameCode }} - {{ game.joinedAt | date:'short' }}
+    </li>
+  </ul>
+</div>

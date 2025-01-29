@@ -1,0 +1,84 @@
+<div class="container mx-auto p-4">
+  <h1 class="text-2xl font-bold mb-4">Tabla de Puntuación - Ronda {{currentMatch?.currentRound}}</h1>
+
+  <div class="mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div *ngFor="let player of currentMatch?.players"
+           class="p-4 border rounded-lg shadow">
+        <h3 class="text-xl font-semibold">{{player.playerName}}</h3>
+        <div class="mt-2">
+          <p>Puntuación Total: {{player.totalScore}}</p>
+          <p>Fichas Gastadas: {{player.fichasGastadas}}</p>
+          <p>Telefunkens: {{player.telefunkens}}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario de puntuación -->
+  <div *ngIf="currentMatch?.status === 'in_progress'" class="mt-6">
+    <h2 class="text-xl font-semibold mb-4">Registrar Puntuación</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block mb-2">Jugador</label>
+        <select [(ngModel)]="selectedPlayerId" class="w-full p-2 border rounded">
+          <option value="">Seleccionar jugador</option>
+          <option *ngFor="let player of currentMatch?.players"
+                  [value]="player.playerId">
+            {{player.playerName}}
+          </option>
+        </select>
+      </div>
+      <div>
+        <label class="block mb-2">Puntos</label>
+        <input type="number" [(ngModel)]="roundScore.points"
+               class="w-full p-2 border rounded">
+      </div>
+      <div>
+        <label class="block mb-2">Fichas Usadas</label>
+        <input type="number" [(ngModel)]="roundScore.fichasUsadas"
+               class="w-full p-2 border rounded">
+      </div>
+      <div class="flex items-center">
+        <label class="flex items-center">
+          <input type="checkbox" [(ngModel)]="roundScore.telefunken"
+                 class="mr-2">
+          Telefunken
+        </label>
+      </div>
+    </div>
+    <button (click)="registrarPuntuacion()"
+            class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+      Registrar Puntuación
+    </button>
+  </div>
+
+  <!-- Historial de rondas -->
+  <div class="mt-6">
+    <h2 class="text-xl font-semibold mb-4">Historial de Rondas</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white border">
+        <thead>
+        <tr>
+          <th class="p-2 border">Ronda</th>
+          <th class="p-2 border">Jugador</th>
+          <th class="p-2 border">Puntos</th>
+          <th class="p-2 border">Fichas</th>
+          <th class="p-2 border">Telefunken</th>
+        </tr>
+        </thead>
+        <tbody>
+        <ng-container *ngFor="let player of currentMatch?.players">
+          <tr *ngFor="let round of player.rounds">
+            <td class="p-2 border">{{round.roundNumber}}</td>
+            <td class="p-2 border">{{player.playerName}}</td>
+            <td class="p-2 border">{{round.points}}</td>
+            <td class="p-2 border">{{round.fichasUsadas}}</td>
+            <td class="p-2 border">{{round.telefunken ? 'Sí' : 'No'}}</td>
+          </tr>
+        </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

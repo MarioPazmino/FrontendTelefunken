@@ -1,0 +1,201 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap');
+
+/* Estilos Generales */
+body, html {
+  font-family: 'Orbitron', sans-serif;
+  margin: 0;
+  background-size: cover;
+  color: #00bcd4;
+  height: 100%;
+}
+
+.page-container {
+  position: relative;
+  z-index: 1;
+}
+
+.page-container::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: -1;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-image: url('https://wallpapercave.com/wp/wp3867395.jpg');
+}
+
+/* Ajustes para evitar colisión con el header */
+.main-content {
+  flex-grow: 1;
+  padding: 20px;
+}
+
+.tabla-section {
+  font-family: 'Orbitron', sans-serif;
+  max-width: 1200px;
+  margin: 100px auto 0;
+  padding: 20px;
+  background-color: rgba(0, 43, 54, 0.8);
+  border-radius: 12px;
+  border: 3px solid #00a9bf;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Ajustar la posición de la alerta */
+.alerta {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #005e6a;
+  color: #00bcd4;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: center;
+  z-index: 1000;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+  animation: slide-down-fade 3s forwards ease-in-out;
+}
+
+@keyframes slide-down-fade {
+  0% {
+    top: 80px;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Tabla */
+.table-section table {
+  width: 100%;
+  margin: 20px 0;
+  border-collapse: collapse;
+}
+
+thead th {
+  font-size: 16px;
+  color: #00bcd4;
+  padding: 10px;
+  background-color: #005e6a;
+  border: 2px solid #004b55;
+  text-align: center;
+}
+
+tbody tr {
+  background-color: #004b55;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #005e6a;
+}
+
+td {
+  font-size: 14px;
+  color: #00bcd4;
+  text-align: center;
+  padding: 8px;
+  border: 1px solid #003740;
+}
+
+/* Inputs */
+input {
+  width: 90%;
+  background-color: #003740;
+  color: white;
+  border: 1px solid #00bcd4;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 14px;
+  padding: 5px;
+}
+
+input:focus {
+  outline: 2px solid #00bcd4;
+}
+
+/* Botones */
+button {
+  font-family: 'Orbitron', sans-serif;
+  background-color: #00a9bf;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  margin-top: 5px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background-color: #008c9e;
+}
+
+button:disabled {
+  background-color: #003740;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  .tabla-section {
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  table {
+    font-size: 12px;
+  }
+
+  input, button {
+    font-size: 12px;
+  }
+
+  .alerta {
+    top: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tabla-section {
+    padding: 8px;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  th, td {
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  input {
+    width: 100%;
+  }
+
+  button {
+    font-size: 10px;
+    padding: 6px 10px;
+  }
+
+  .alerta {
+    top: 120px;
+  }
+}

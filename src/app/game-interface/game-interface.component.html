@@ -1,0 +1,84 @@
+<header>
+  <nav>
+    <img src="assets/img/logo.jpg" alt="Logo Tel.efunken" class="logo" />
+    <ul>
+      <li><a href="#">Inicio</a></li>
+      <li *ngIf="!isLoggedIn"><a href="#">Iniciar Sesión</a></li>
+      <li *ngIf="isLoggedIn" class="user-status">
+        <i class="fas fa-user"></i>
+        <span>Usuario Registrado</span>
+      </li>
+    </ul>
+  </nav>
+</header>
+
+<div class="game-container">
+  <div class="status-banner" *ngIf="!isLoggedIn">
+    <i class="fas fa-info-circle"></i>
+    <span>Estás jugando como invitado. Las partidas creadas serán temporales (24h)</span>
+    <a href="#" class="register-link">Regístrate para crear partidas permanentes</a>
+  </div>
+
+  <div class="header">
+    <div class="code-box">
+      <input type="text" [value]="gameCode" readonly class="code-input" />
+      <button class="copy-btn" (click)="copyCode()">
+        <img src="https://img.icons8.com/ios-glyphs/30/ffffff/copy.png" alt="Copiar" />
+      </button>
+    </div>
+  </div>
+
+  <div class="game-image">
+    <img
+      src="https://www.casinobarcelona.es/blog/wp-content/uploads/2022/09/apostar-poker-1.webp"
+      alt="Juego"
+    />
+  </div>
+
+  <div class="buttons-container">
+    <button class="btn create-btn" (click)="createGame()">
+      <i class="fas fa-plus"></i> Nueva Partida
+      <span class="btn-subtitle" *ngIf="!isLoggedIn">(Temporal)</span>
+    </button>
+    <button class="btn join-btn" (click)="openModal()">
+      <i class="fas fa-users"></i> Unirse a Partida
+    </button>
+  </div>
+
+  <div class="recent-games" *ngIf="isLoggedIn">
+    <h3>Partidas Recientes</h3>
+    <div class="games-grid">
+      <!-- Aquí irían las partidas recientes -->
+    </div>
+  </div>
+
+  <div class="modal" [class.show]="isModalOpen">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Ingresar Código</h2>
+        <button class="close-btn" (click)="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <label for="codeInput">Ingresa el código:</label>
+        <input type="text" id="codeInput" class="modal-input" [(ngModel)]="codeInput" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn submit-btn" (click)="submitCode()">Ingresar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-content">
+    <p>&copy; 2024 Plataforma Telefunken - Todos los derechos reservados</p>
+    <div class="footer-links">
+      <a href="#">Política de Privacidad</a>
+      <a href="#">Términos y Condiciones</a>
+      <a href="#">Ayuda</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p><a href="#">Términos de uso</a> | <a href="#">Soporte</a></p>
+  </div>
+</footer>
