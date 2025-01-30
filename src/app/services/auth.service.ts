@@ -7,7 +7,7 @@ import { map, catchError, tap } from 'rxjs/operators';
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://ec2-3-145-55-21.us-east-2.compute.amazonaws.com:3000/api/v1';
+  private apiUrl = 'http://ec2-18-224-64-120.us-east-2.compute.amazonaws.com:3000/api/v1';
   private tokenKey = 'token';
   private userKey = 'user';
 

@@ -7,7 +7,7 @@ import {catchError} from 'rxjs/operators';
   providedIn: 'root',
 })
 export class GameService {
-  private apiUrl = 'http://ec2-3-145-55-21.us-east-2.compute.amazonaws.com:3000/api/v1/games'; // URL de tu backend
+  private apiUrl = 'http://ec2-18-224-64-120.us-east-2.compute.amazonaws.com:3000/api/v1/games'; // URL de tu backend
 
   constructor(private http: HttpClient) {}
 

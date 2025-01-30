@@ -11,7 +11,7 @@ export const routes: Routes = [
   { path: 'inicio', component: InicioComponent },
   { path: 'game-interface', component: GameInterfaceComponent },
   { path: 'sala-espera/:gameId', component: SalaEsperaComponent },
-  { path: 'tabla-avanzada/:matchId', component: TablaAvanzadaComponent },
+  { path: 'tabla-avanzada/:gameId', component: TablaAvanzadaComponent },
 
   // Ruta protegida para el dashboard solo para usuarios registrados
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },

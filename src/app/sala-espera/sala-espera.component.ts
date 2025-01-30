@@ -59,6 +59,7 @@ export class SalaEsperaComponent implements OnInit, OnDestroy {
 
   loadGameData(): void {
     this.isLoading = true;
+
     this.gameService.getGameById(this.gameId).subscribe({
       next: (game) => {
         this.gameData = game;

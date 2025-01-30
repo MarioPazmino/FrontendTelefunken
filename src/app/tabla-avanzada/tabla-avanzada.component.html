@@ -1,82 +1,109 @@
 <div class="container mx-auto p-4">
-  <h1 class="text-2xl font-bold mb-4">Tabla de Puntuación - Ronda {{currentMatch?.currentRound}}</h1>
+  <!-- Game Status Header -->
+  <div class="bg-white shadow rounded-lg p-4 mb-4">
+    <h2 class="text-2xl font-bold mb-2">Estado del Juego</h2>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <p class="text-gray-600">Ronda actual: {{currentMatch?.currentRound}}</p>
+        <p class="text-gray-600">Estado: {{currentMatch?.status === 'in_progress' ? 'En progreso' : 'Completado'}}</p>
+      </div>
+      <div>
+        <p class="text-gray-600">Iniciado: {{currentMatch?.startedAt | date:'short'}}</p>
+        <p class="text-gray-600">Última actualización: {{currentMatch?.updatedAt | date:'short'}}</p>
+      </div>
+    </div>
+  </div>
 
-  <div class="mb-6">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div *ngFor="let player of currentMatch?.players"
-           class="p-4 border rounded-lg shadow">
-        <h3 class="text-xl font-semibold">{{player.playerName}}</h3>
-        <div class="mt-2">
-          <p>Puntuación Total: {{player.totalScore}}</p>
-          <p>Fichas Gastadas: {{player.fichasGastadas}}</p>
-          <p>Telefunkens: {{player.telefunkens}}</p>
+  <!-- Score Input Form -->
+  <div class="bg-white shadow rounded-lg p-4 mb-4">
+    <h3 class="text-xl font-bold mb-4">Registrar Puntuación</h3>
+    <form (ngSubmit)="registrarPuntuacion()" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Jugador</label>
+          <select
+            [(ngModel)]="selectedPlayerId"
+            name="playerId"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <option value="">Seleccionar jugador</option>
+            <option *ngFor="let player of currentMatch?.players" [value]="player.playerId">
+              {{player.playerName}}
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Puntos</label>
+          <input
+            type="number"
+            [(ngModel)]="roundScore.points"
+            name="points"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Fichas Usadas</label>
+          <input
+            type="number"
+            [(ngModel)]="roundScore.fichasUsadas"
+            name="fichasUsadas"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+        </div>
+
+        <div class="flex items-center">
+          <input
+            type="checkbox"
+            [(ngModel)]="roundScore.telefunken"
+            name="telefunken"
+            class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+          <label class="ml-2 block text-sm text-gray-700">Telefunken</label>
         </div>
       </div>
-    </div>
+
+      <div class="flex justify-end space-x-3">
+        <button
+          type="button"
+          (click)="resetForm()"
+          class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+          Limpiar
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+          Registrar Puntuación
+        </button>
+      </div>
+    </form>
   </div>
 
-  <!-- Formulario de puntuación -->
-  <div *ngIf="currentMatch?.status === 'in_progress'" class="mt-6">
-    <h2 class="text-xl font-semibold mb-4">Registrar Puntuación</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label class="block mb-2">Jugador</label>
-        <select [(ngModel)]="selectedPlayerId" class="w-full p-2 border rounded">
-          <option value="">Seleccionar jugador</option>
-          <option *ngFor="let player of currentMatch?.players"
-                  [value]="player.playerId">
-            {{player.playerName}}
-          </option>
-        </select>
-      </div>
-      <div>
-        <label class="block mb-2">Puntos</label>
-        <input type="number" [(ngModel)]="roundScore.points"
-               class="w-full p-2 border rounded">
-      </div>
-      <div>
-        <label class="block mb-2">Fichas Usadas</label>
-        <input type="number" [(ngModel)]="roundScore.fichasUsadas"
-               class="w-full p-2 border rounded">
-      </div>
-      <div class="flex items-center">
-        <label class="flex items-center">
-          <input type="checkbox" [(ngModel)]="roundScore.telefunken"
-                 class="mr-2">
-          Telefunken
-        </label>
-      </div>
-    </div>
-    <button (click)="registrarPuntuacion()"
-            class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-      Registrar Puntuación
-    </button>
-  </div>
-
-  <!-- Historial de rondas -->
-  <div class="mt-6">
-    <h2 class="text-xl font-semibold mb-4">Historial de Rondas</h2>
+  <!-- Scoreboard -->
+  <div class="bg-white shadow rounded-lg p-4">
+    <h3 class="text-xl font-bold mb-4">Tabla de Puntuaciones</h3>
     <div class="overflow-x-auto">
-      <table class="min-w-full bg-white border">
-        <thead>
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
         <tr>
-          <th class="p-2 border">Ronda</th>
-          <th class="p-2 border">Jugador</th>
-          <th class="p-2 border">Puntos</th>
-          <th class="p-2 border">Fichas</th>
-          <th class="p-2 border">Telefunken</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jugador</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Puntuación Total</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fichas Gastadas</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefunkens</th>
         </tr>
         </thead>
-        <tbody>
-        <ng-container *ngFor="let player of currentMatch?.players">
-          <tr *ngFor="let round of player.rounds">
-            <td class="p-2 border">{{round.roundNumber}}</td>
-            <td class="p-2 border">{{player.playerName}}</td>
-            <td class="p-2 border">{{round.points}}</td>
-            <td class="p-2 border">{{round.fichasUsadas}}</td>
-            <td class="p-2 border">{{round.telefunken ? 'Sí' : 'No'}}</td>
-          </tr>
-        </ng-container>
+        <tbody class="bg-white divide-y divide-gray-200">
+        <tr *ngFor="let player of currentMatch?.players">
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+            {{player.playerName}}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            {{player.totalScore}}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            {{player.fichasGastadas}}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            {{player.telefunkens}}
+          </td>
+        </tr>
         </tbody>
       </table>
     </div>

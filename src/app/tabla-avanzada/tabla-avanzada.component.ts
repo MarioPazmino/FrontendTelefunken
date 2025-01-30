@@ -22,12 +22,7 @@ export type TablaFila = {
 export class TablaAvanzadaComponent implements OnInit, OnDestroy {
   currentMatch: GameMatch | null = null;
   selectedPlayerId: string = '';
-  roundScore = {
-    points: 0,
-    fichasUsadas: 0,
-    telefunken: false
-  };
-  private matchSubscription?: Subscription;
+  roundScore = { points: 0, fichasUsadas: 0, telefunken: false };
   private statusSubscription?: Subscription;
 
   constructor(
@@ -38,22 +33,18 @@ export class TablaAvanzadaComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.route.params.subscribe(params => {
-      const matchId = params['matchId'];
-      if (matchId) {
-        this.initializeStatusPolling(matchId);
+      const gameId = params['gameId'];
+      if (gameId) {
+        this.initializeStatusPolling(gameId);
       } else {
-        console.error('Error: matchId no encontrado en la URL');
+        console.error('Error: gameId no encontrado en la URL');
       }
     });
   }
 
-
-  initializeStatusPolling(matchId: string) {
-    // Actualizar cada 5 segundos
+  initializeStatusPolling(gameId: string) {
     this.statusSubscription = interval(5000)
-      .pipe(
-        switchMap(() => this.gameScoreService.getMatchStatus(matchId))
-      )
+      .pipe(switchMap(() => this.gameScoreService.getMatchStatus(gameId)))
       .subscribe({
         next: (match) => {
           this.currentMatch = match;
@@ -79,7 +70,7 @@ export class TablaAvanzadaComponent implements OnInit, OnDestroy {
       this.selectedPlayerId,
       this.roundScore
     ).subscribe({
-      next: (result) => {
+      next: () => {
         Swal.fire('Éxito', 'Puntuación registrada', 'success');
         this.resetForm();
       },
@@ -91,11 +82,7 @@ export class TablaAvanzadaComponent implements OnInit, OnDestroy {
 
   resetForm() {
     this.selectedPlayerId = '';
-    this.roundScore = {
-      points: 0,
-      fichasUsadas: 0,
-      telefunken: false
-    };
+    this.roundScore = { points: 0, fichasUsadas: 0, telefunken: false };
   }
 
   mostrarGanador() {
@@ -118,11 +105,6 @@ export class TablaAvanzadaComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.matchSubscription) {
-      this.matchSubscription.unsubscribe();
-    }
-    if (this.statusSubscription) {
-      this.statusSubscription.unsubscribe();
-    }
+    this.statusSubscription?.unsubscribe();
   }
 }
