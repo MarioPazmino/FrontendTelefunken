@@ -33,6 +33,11 @@ export class AuthService {
     return this.http.get(`${this.apiUrl}/users/check-email`, { params: { email } });
   }
 
+  // Verificar si el usuario ya está registrado
+  checkUsernameExists(username: string) {
+    return this.http.get<{ exists: boolean }>(`${this.apiUrl}/check-username/${username}`);
+  }
+
   // Configuración del token
   setToken(token: string): void {
     localStorage.setItem(this.tokenKey, token);

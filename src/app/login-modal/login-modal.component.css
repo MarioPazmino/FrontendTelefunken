@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
 
+/* Estilos base */
 body, html {
   height: 100%;
   margin: 0;
@@ -7,84 +9,340 @@ body, html {
   justify-content: center;
   align-items: center;
   background-color: #f0f0f0;
-  font-family: 'Orbitron', sans-serif;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
 }
 
+/* Modal base */
 .modal {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  backdrop-filter: blur(5px);
+  padding: 15px;
+  box-sizing: border-box;
 }
 
 .modal-content {
-  background: #003e4a;
-  padding: 20px;
-  border-radius: 8px;
-  width: 90%;
+  background: linear-gradient(145deg, #003e4a, #002830);
+  padding: clamp(20px, 5vw, 30px);
+  border-radius: 15px;
+  width: 100%;
   max-width: 400px;
   text-align: center;
   border: 2px solid #00bcd4;
+  box-shadow: 0 0 20px rgba(0, 188, 212, 0.2);
+  position: relative;
+  margin: auto;
+  box-sizing: border-box;
 }
 
+/* Botón de cierre */
 .close {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 24px;
+  top: 15px;
+  right: 15px;
+  font-size: clamp(20px, 4vw, 24px);
   cursor: pointer;
+  color: #00bcd4;
+  transition: color 0.3s ease, transform 0.3s ease;
+  z-index: 2;
 }
 
+.close:hover {
+  color: #fff;
+  transform: rotate(90deg);
+}
+
+/* Título */
 h2 {
   color: #00bcd4;
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(20px, 5vw, 28px);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: clamp(15px, 4vw, 25px);
+  text-shadow: 0 0 10px rgba(0, 188, 212, 0.3);
+  word-wrap: break-word;
 }
 
+/* Campos de entrada */
 input {
   width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid #00bcd4;
-  border-radius: 5px;
-  background-color: #004a56;
+  padding: clamp(8px, 2vw, 12px);
+  margin: clamp(8px, 2vw, 12px) 0;
+  border: 2px solid rgba(0, 188, 212, 0.3);
+  border-radius: 8px;
+  background-color: rgba(0, 74, 86, 0.6);
   color: #fff;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(14px, 3vw, 16px);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
-button {
-  width: 100%;
+input:focus {
+  outline: none;
+  border-color: #00bcd4;
+  box-shadow: 0 0 15px rgba(0, 188, 212, 0.2);
+  background-color: rgba(0, 74, 86, 0.8);
+}
+
+/* Sugerencias de nombres de usuario */
+.username-suggestions {
+  margin-top: 10px;
   padding: 10px;
-  border: none;
-  background-color: #00bcd4;
+  background: rgba(0, 74, 86, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 188, 212, 0.2);
+}
+
+.username-suggestions p {
+  color: #00bcd4;
+  font-size: clamp(14px, 3vw, 16px);
+  margin: 0 0 10px 0;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.suggestions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.suggestion-button {
+  background: rgba(0, 188, 212, 0.1);
+  border: 1px solid rgba(0, 188, 212, 0.3);
   color: #fff;
-  font-size: 16px;
+  padding: 5px 10px;
   border-radius: 5px;
   cursor: pointer;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(12px, 2.5vw, 14px);
+  transition: all 0.3s ease;
+  flex: 0 1 auto;
+  min-width: 80px;
+  text-transform: none;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.suggestion-button:hover {
+  background: rgba(0, 188, 212, 0.2);
+  border-color: #00bcd4;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 188, 212, 0.2);
+}
+
+/* Botón principal */
+button {
+  width: 100%;
+  padding: clamp(10px, 2.5vw, 12px);
+  border: none;
+  background: linear-gradient(45deg, #00bcd4, #008c99);
+  color: #fff;
+  font-size: clamp(16px, 3.5vw, 18px);
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: clamp(15px, 4vw, 20px);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
 button:disabled {
-  background-color: #b0b0b0;
+  background: linear-gradient(45deg, #b0b0b0, #8e8e8e);
   cursor: not-allowed;
+  opacity: 0.7;
+}
+
+button:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: 0.5s;
 }
 
 button:hover:enabled {
-  background-color: #008c99;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 188, 212, 0.4);
 }
 
+button:hover:enabled:before {
+  left: 100%;
+}
+
+/* Enlaces y opciones */
 .options {
-  font-size: 14px;
-  margin-top: 10px;
+  font-size: clamp(14px, 3vw, 16px);
+  margin-top: clamp(15px, 4vw, 20px);
+  color: #fff;
+  padding: 0 10px;
 }
 
 .options a {
   color: #00bcd4;
   text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  display: inline-block;
+  margin: 5px 0;
+}
+
+.options a:after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: #00bcd4;
+  transition: width 0.3s ease;
 }
 
 .options a:hover {
-  text-decoration: underline;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(0, 188, 212, 0.5);
+}
+
+.options a:hover:after {
+  width: 100%;
+}
+
+/* Mensajes de error */
+.error-message {
+  color: #ff4d4d;
+  font-size: clamp(12px, 2.5vw, 14px);
+  margin-top: 5px;
+  text-align: left;
+  padding-left: 5px;
+}
+
+/* Labels */
+label {
+  display: block;
+  text-align: left;
+  color: #00bcd4;
+  margin-top: clamp(8px, 2vw, 10px);
+  font-weight: 500;
+  letter-spacing: 1px;
+  font-size: clamp(14px, 3vw, 16px);
+}
+
+/* Media Queries */
+@media screen and (max-width: 320px) {
+  .modal-content {
+    padding: 15px;
+  }
+  
+  h2 {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+  
+  input {
+    padding: 8px;
+    margin: 6px 0;
+  }
+  
+  .options {
+    font-size: 13px;
+  }
+
+  .suggestion-button {
+    min-width: 60px;
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .modal-content {
+    padding: 30px;
+  }
+  
+  h2 {
+    margin-bottom: 25px;
+  }
+  
+  input {
+    padding: 12px;
+    margin: 12px 0;
+  }
+  
+  button {
+    margin-top: 20px;
+  }
+
+  .suggestion-button {
+    min-width: 100px;
+    font-size: 14px;
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  .modal-content {
+    max-width: 450px;
+  }
+  
+  h2 {
+    font-size: 28px;
+  }
+  
+  input, button {
+    font-size: 16px;
+  }
+}
+
+@media (hover: none) {
+  button:hover:enabled {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  button:active:enabled {
+    transform: translateY(1px);
+  }
+  
+  .options a:hover {
+    color: #00bcd4;
+  }
+
+  .suggestion-button:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+@media screen and (max-height: 500px) and (orientation: landscape) {
+  .modal {
+    align-items: flex-start;
+    overflow-y: auto;
+  }
+  
+  .modal-content {
+    margin: 20px auto;
+  }
 }
