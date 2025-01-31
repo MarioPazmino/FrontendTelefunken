@@ -1,51 +1,57 @@
-<div class="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">
+<div class="min-h-screen bg-[#001a1a] p-4 md:p-6 lg:p-8">
   <div class="max-w-4xl mx-auto">
     <!-- Loading State -->
-    <div *ngIf="isLoading" class="bg-white rounded-lg shadow p-6 animate-pulse">
-      <div class="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
-      <div class="h-16 bg-gray-200 rounded mb-6"></div>
+    <div *ngIf="isLoading" class="bg-teal-900/30 backdrop-blur-sm rounded-lg shadow-lg shadow-teal-900/20 p-6 animate-pulse">
+      <div class="h-8 bg-teal-800/50 rounded w-1/3 mb-4"></div>
+      <div class="h-16 bg-teal-800/50 rounded mb-6"></div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="h-12 bg-gray-200 rounded"></div>
-        <div class="h-12 bg-gray-200 rounded"></div>
+        <div class="h-12 bg-teal-800/50 rounded"></div>
+        <div class="h-12 bg-teal-800/50 rounded"></div>
       </div>
     </div>
 
     <!-- Error State -->
-    <div *ngIf="error" class="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded">
+    <div *ngIf="error" class="bg-red-950/80 border-l-4 border-red-500 p-4 mb-4 rounded backdrop-blur-sm">
       <div class="flex items-center">
         <div class="flex-shrink-0">
-          <svg class="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+          <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
           </svg>
         </div>
         <div class="ml-3">
-          <p class="text-sm text-red-700">{{ error }}</p>
+          <p class="text-sm text-red-200">{{ error }}</p>
         </div>
       </div>
     </div>
 
     <!-- Main Content -->
-    <div *ngIf="!isLoading && !error" class="bg-white rounded-lg shadow-lg">
-      <div class="p-6 border-b border-gray-200">
+    <div *ngIf="!isLoading && !error" class="bg-teal-900/20 backdrop-blur-sm rounded-lg shadow-xl shadow-teal-900/30 border border-teal-800/30">
+      <!-- Header -->
+      <div class="p-6 border-b border-teal-800/30">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 class="text-2xl font-bold text-gray-900">Sala de Espera</h1>
-          <div class="flex items-center bg-blue-50 px-3 py-1 rounded-full">
-            <svg class="h-5 w-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <h1 class="text-2xl font-bold bg-gradient-to-r from-cyan-300 to-teal-300 bg-clip-text text-transparent">
+            Sala de Espera
+          </h1>
+          <div class="flex items-center bg-teal-800/30 px-3 py-1 rounded-full border border-teal-700/30">
+            <svg class="h-5 w-5 text-cyan-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <span class="text-sm font-medium text-blue-700">{{ players.length }}/6</span>
+            <span class="text-sm font-medium text-cyan-300">{{ players.length }}/6</span>
           </div>
         </div>
       </div>
 
       <!-- Game Code Section -->
-      <div class="p-6 border-b border-gray-200">
-        <div class="bg-gray-50 p-4 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="p-6 border-b border-teal-800/30">
+        <div class="bg-teal-900/30 p-4 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div class="flex items-center">
-            <span class="text-gray-500 mr-2">Código de la partida:</span>
-            <code class="font-mono font-bold bg-white px-3 py-1 rounded border border-gray-200">{{ gameCode }}</code>
+            <span class="text-cyan-400 mr-2">Código de la partida:</span>
+            <code class="font-mono font-bold bg-teal-950/80 text-cyan-300 px-3 py-1 rounded border border-teal-700/30">
+              {{ gameCode }}
+            </code>
           </div>
-          <button (click)="copyGameCode()" class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+          <button (click)="copyGameCode()" 
+                  class="inline-flex items-center px-4 py-2 bg-cyan-600/80 hover:bg-cyan-500/80 text-white rounded-lg transition-all duration-200 shadow-lg shadow-cyan-900/30">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
             </svg>
@@ -56,24 +62,24 @@
 
       <!-- Players List -->
       <div class="p-6">
-        <h2 class="text-xl font-semibold mb-4 text-gray-900">Jugadores</h2>
+        <h2 class="text-xl font-semibold mb-4 text-cyan-200">Jugadores</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div *ngFor="let player of players"
-               class="p-4 border border-gray-200 rounded-lg flex items-center justify-between hover:bg-gray-50 transition-colors">
+               class="p-4 border border-teal-800/30 rounded-lg flex items-center justify-between hover:bg-teal-800/20 transition-all duration-200">
             <div class="flex items-center space-x-3">
-              <div class="w-2 h-2 rounded-full"
-                   [ngClass]="{'bg-green-500': player.status === 'active', 'bg-gray-400': player.status !== 'active'}">
+              <div class="w-2 h-2 rounded-full shadow-lg"
+                   [ngClass]="{'bg-emerald-400 shadow-emerald-400/50': player.status === 'active', 'bg-gray-500 shadow-gray-500/50': player.status !== 'active'}">
               </div>
-              <span class="font-medium text-gray-900">{{ player.name }}</span>
+              <span class="font-medium text-cyan-100">{{ player.name }}</span>
               <span *ngIf="player.id === gameData?.createdBy"
-                    class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full font-medium">
+                    class="px-2 py-1 bg-amber-400/10 text-amber-300 text-xs rounded-full font-medium border border-amber-400/20">
                 Anfitrión
               </span>
             </div>
             <span class="text-sm px-3 py-1 rounded-full"
                   [ngClass]="{
-                    'bg-blue-100 text-blue-800': player.type === 'registered',
-                    'bg-gray-100 text-gray-600': player.type !== 'registered'
+                    'bg-cyan-900/30 text-cyan-300 border border-cyan-700/30': player.type === 'registered',
+                    'bg-teal-900/30 text-teal-300 border border-teal-700/30': player.type !== 'registered'
                   }">
               {{ player.type === 'registered' ? 'Registrado' : 'Invitado' }}
             </span>
@@ -81,21 +87,22 @@
         </div>
 
         <!-- Warning Message -->
-        <div *ngIf="!canStartGame" class="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
+        <div *ngIf="!canStartGame" 
+             class="mb-6 p-4 bg-amber-950/30 border-l-4 border-amber-500/50 rounded-lg backdrop-blur-sm">
           <div class="flex">
-            <svg class="h-5 w-5 text-yellow-400 mr-3" viewBox="0 0 20 20" fill="currentColor">
+            <svg class="h-5 w-5 text-amber-400 mr-3" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
             </svg>
-            <p class="text-sm text-yellow-700">
+            <p class="text-sm text-amber-200">
               Se necesitan al menos {{ minPlayers }} jugadores para comenzar ({{ players.length }}/{{ minPlayers }})
             </p>
           </div>
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex flex-col sm:flex-row justify-between gap-4 pt-4">
+        <div class="flex flex-col sm:flex-row justify-between gap-4 pt-4 border-t border-teal-800/30">
           <button (click)="leaveRoom()"
-                  class="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                  class="inline-flex items-center px-4 py-2 bg-red-800/80 hover:bg-red-700/80 text-white rounded-lg transition-all duration-200 shadow-lg shadow-red-900/30">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
             </svg>
@@ -105,18 +112,18 @@
           <ng-container *ngIf="isHost; else waitingMessage">
             <button [disabled]="!canStartGame"
                     (click)="startGame()"
-                    class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="inline-flex items-center px-4 py-2 bg-cyan-600/80 hover:bg-cyan-500/80 text-white rounded-lg transition-all duration-200 shadow-lg shadow-cyan-900/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
               Iniciar Juego
-              <span *ngIf="!canStartGame"> (Se necesitan {{minPlayers}} jugadores)</span>
+              <span *ngIf="!canStartGame" class="text-cyan-200/80"> (Se necesitan {{minPlayers}} jugadores)</span>
             </button>
           </ng-container>
 
           <ng-template #waitingMessage>
-            <p class="text-center text-gray-600 self-center">
+            <p class="text-center text-cyan-400/80 self-center">
               Esperando a que el anfitrión inicie el juego...
             </p>
           </ng-template>
