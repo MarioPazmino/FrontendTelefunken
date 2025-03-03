@@ -1,84 +1,162 @@
-<header>
-  <nav>
-    <img src="assets/img/logo.jpg" alt="Logo Tel.efunken" class="logo" />
-    <ul>
-      <li><a href="#">Inicio</a></li>
-      <li *ngIf="!isLoggedIn"><a href="#">Iniciar Sesión</a></li>
-      <li *ngIf="isLoggedIn" class="user-status">
-        <i class="fas fa-user"></i>
-        <span>Usuario Registrado</span>
-      </li>
-    </ul>
-  </nav>
-</header>
+<div class="min-h-screen bg-gradient-to-br from-custom-dark to-custom-blue text-custom-white py-10 px-4">
+  <!-- Main Container -->
+  <div class="max-w-4xl mx-auto">
+    <!-- User Welcome Section -->
+    <div class="bg-custom-blue/90 rounded-lg p-5 mb-8 shadow-lg border border-custom-gray">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-medium mb-1">
+            <span *ngIf="isLoggedIn">Bienvenido, {{ username }}</span>
+            <span *ngIf="!isLoggedIn">Bienvenido, Invitado</span>
+          </h2>
+          <p class="text-custom-gray text-sm">
+            <span *ngIf="isLoggedIn">Usuario registrado</span>
+            <span *ngIf="!isLoggedIn">Jugando como invitado</span>
+          </p>
+        </div>
+        <div *ngIf="isLoggedIn" class="flex space-x-2">
+          <span class="inline-flex items-center px-3 py-1 rounded-full bg-custom-turquoise/30 text-custom-turquoise text-sm">
+            <span class="w-2 h-2 rounded-full bg-custom-turquoise mr-2"></span>
+            Online
+          </span>
+        </div>
+      </div>
+    </div>
 
-<div class="game-container">
-  <div class="status-banner" *ngIf="!isLoggedIn">
-    <i class="fas fa-info-circle"></i>
-    <span>Estás jugando como invitado. Las partidas creadas serán temporales (24h)</span>
-    <a href="#" class="register-link">Regístrate para crear partidas permanentes</a>
-  </div>
+    <!-- Game Code Display - Always visible -->
+    <div class="bg-custom-blue/90 rounded-lg p-5 mb-8 shadow-lg border border-custom-gray">
+      <div class="flex flex-col md:flex-row md:items-center justify-between">
+        <div>
+          <h3 class="text-lg font-medium mb-2">Código de partida</h3>
+          <div class="flex items-center gap-3">
+            <div class="bg-custom-dark py-3 px-5 rounded font-mono text-xl tracking-widest">
+              {{ gameCode }}
+            </div>
+            <button (click)="copyCode()" class="p-2 rounded bg-custom-turquoise hover:bg-custom-dark active:bg-custom-dark transition shadow-md">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+              </svg>
+            </button>
+            <button (click)="generateGameCode()" class="p-2 rounded bg-custom-turquoise hover:bg-custom-dark active:bg-custom-dark transition shadow-md">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <div class="header">
-    <div class="code-box">
-      <input type="text" [value]="gameCode" readonly class="code-input" />
-      <button class="copy-btn" (click)="copyCode()">
-        <img src="https://img.icons8.com/ios-glyphs/30/ffffff/copy.png" alt="Copiar" />
-      </button>
+    <!-- Game Options -->
+    <div class="grid md:grid-cols-2 gap-6 mb-12">
+      <!-- Create Game Card -->
+      <div class="bg-custom-blue/90 rounded-lg overflow-hidden shadow-lg border border-custom-gray">
+        <div class="h-16 bg-custom-dark flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-custom-turquoise" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+          </svg>
+        </div>
+        <div class="p-5">
+          <h3 class="text-lg font-medium mb-3">Crear Nueva Partida</h3>
+          <p class="text-custom-gray mb-5 text-sm">Utiliza el código generado y compártelo con tus amigos.</p>
+          <button
+            (click)="createGame()"
+            [disabled]="isLoading"
+            class="w-full py-2 px-4 bg-custom-turquoise rounded font-medium hover:bg-custom-turquoise/80 transition flex items-center justify-center">
+            <span *ngIf="!isLoading">Crear Partida</span>
+            <svg *ngIf="isLoading" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Join Game Card -->
+      <div class="bg-custom-blue/90 rounded-lg overflow-hidden shadow-lg border border-custom-gray">
+        <div class="h-16 bg-custom-dark flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-custom-turquoise" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+        </div>
+        <div class="p-5">
+          <h3 class="text-lg font-medium mb-3">Unirse a una Partida</h3>
+          <p class="text-custom-gray mb-5 text-sm">Introduce el código de una partida existente.</p>
+          <button
+            (click)="openModal()"
+            class="w-full py-2 px-4 bg-custom-turquoise rounded font-medium hover:bg-custom-turquoise/80 transition">
+            Unirse con Código
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Stats Section -->
+    <div class="bg-custom-blue/90 rounded-lg p-5 mb-10 shadow-lg border border-custom-gray">
+      <h3 class="text-lg font-medium mb-4 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-custom-gray" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        Estadísticas de Juego
+      </h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+        <div class="bg-custom-dark p-3 rounded border border-custom-gray">
+          <p class="text-2xl font-medium text-custom-white">0</p>
+          <p class="text-xs uppercase tracking-wider text-custom-gray mt-1">Partidas jugadas</p>
+        </div>
+        <div class="bg-custom-dark p-3 rounded border border-custom-gray">
+          <p class="text-2xl font-medium text-custom-white">0</p>
+          <p class="text-xs uppercase tracking-wider text-custom-gray mt-1">Victorias</p>
+        </div>
+        <div class="bg-custom-dark p-3 rounded border border-custom-gray">
+          <p class="text-2xl font-medium text-custom-white">0</p>
+          <p class="text-xs uppercase tracking-wider text-custom-gray mt-1">Amigos online</p>
+        </div>
+        <div class="bg-custom-dark p-3 rounded border border-custom-gray">
+          <p class="text-2xl font-medium text-custom-white">0</p>
+          <p class="text-xs uppercase tracking-wider text-custom-gray mt-1">Ranking</p>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="game-image">
-    <img
-      src="https://www.casinobarcelona.es/blog/wp-content/uploads/2022/09/apostar-poker-1.webp"
-      alt="Juego"
-    />
-  </div>
-
-  <div class="buttons-container">
-    <button class="btn create-btn" (click)="createGame()">
-      <i class="fas fa-plus"></i> Nueva Partida
-      <span class="btn-subtitle" *ngIf="!isLoggedIn">(Temporal)</span>
-    </button>
-    <button class="btn join-btn" (click)="openModal()">
-      <i class="fas fa-users"></i> Unirse a Partida
-    </button>
-  </div>
-
-  <div class="recent-games" *ngIf="isLoggedIn">
-    <h3>Partidas Recientes</h3>
-    <div class="games-grid">
-      <!-- Aquí irían las partidas recientes -->
-    </div>
-  </div>
-
-  <div class="modal" [class.show]="isModalOpen">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Ingresar Código</h2>
-        <button class="close-btn" (click)="closeModal()">×</button>
+  <!-- Join Game Modal -->
+  <div *ngIf="isModalOpen" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+    <div class="bg-custom-blue/90 rounded-lg p-6 max-w-md w-full shadow-xl border border-custom-gray animate-fade-in">
+      <h3 class="text-xl font-medium mb-4 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-custom-gray" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 0L11.828 15H9v-2.828l8.586-8.586z"/>
+        </svg>
+        Unirse a una Partida
+      </h3>
+      <p class="text-custom-gray mb-5 text-sm">Introduce el código de 6 caracteres para unirte a la partida.</p>
+      <div class="mb-5">
+        <label for="gameCode" class="block text-sm font-medium text-custom-gray mb-2">Código de Partida</label>
+        <input
+          type="text"
+          id="gameCode"
+          [(ngModel)]="codeInput"
+          class="w-full p-3 bg-custom-dark border border-custom-gray rounded text-custom-white text-center tracking-widest font-mono text-xl focus:outline-none focus:ring-2 focus:ring-custom-turquoise focus:border-transparent"
+          placeholder="ABC123"
+          maxlength="6">
       </div>
-      <div class="modal-body">
-        <label for="codeInput">Ingresa el código:</label>
-        <input type="text" id="codeInput" class="modal-input" [(ngModel)]="codeInput" />
-      </div>
-      <div class="modal-footer">
-        <button class="btn submit-btn" (click)="submitCode()">Ingresar</button>
+      <div class="flex space-x-3">
+        <button
+          (click)="closeModal()"
+          class="flex-1 py-2 px-4 bg-custom-dark rounded font-medium hover:bg-custom-gray transition">
+          Cancelar
+        </button>
+        <button
+          (click)="submitCode()"
+          [disabled]="isLoading || !codeInput.trim()"
+          class="flex-1 py-2 px-4 bg-custom-turquoise rounded font-medium hover:bg-custom-turquoise/80 transition flex items-center justify-center">
+          <span *ngIf="!isLoading">Unirse</span>
+          <svg *ngIf="isLoading" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </button>
       </div>
     </div>
   </div>
 </div>
-
-<footer>
-  <div class="footer-content">
-    <p>&copy; 2024 Plataforma Telefunken - Todos los derechos reservados</p>
-    <div class="footer-links">
-      <a href="#">Política de Privacidad</a>
-      <a href="#">Términos y Condiciones</a>
-      <a href="#">Ayuda</a>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <p><a href="#">Términos de uso</a> | <a href="#">Soporte</a></p>
-  </div>
-</footer>

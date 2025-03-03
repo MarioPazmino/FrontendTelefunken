@@ -1,176 +1,174 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { catchError, Observable, throwError, of, tap } from 'rxjs';
+
+interface User {
+  username: string;
+  email?: string;
+  isGuest?: boolean;
+}
+
+interface AuthResponse {
+  token: string;
+  user: User;
+  message: string;
+}
+
+interface UsernameCheckResponse {
+  exists: boolean;
+  suggestions?: string[];
+}
+
+interface EmailCheckResponse {
+  exists: boolean;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://ec2-18-224-64-120.us-east-2.compute.amazonaws.com:3000/api/v1';
-  private tokenKey = 'token';
-  private userKey = 'user';
+  private apiUrl = 'http://localhost:3000/api/v1';
+  private readonly TOKEN_KEY = 'token';
+  private readonly USER_KEY = 'user';
 
   constructor(private http: HttpClient) {}
 
-  // Registrar un nuevo usuario
-  register(user: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/users/register`, user);
-  }
-
-  // Iniciar sesión
-  login(credentials: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/users/login`, credentials).pipe(
-      tap((response: any) => {
-        this.setToken(response.token);
-        this.setUserData(response.user);
-      })
+  register(user: { email: string; username: string; password: string }): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/users/register`, user).pipe(
+      tap((response) => {
+        if (response.token) {
+          this.setToken(response.token);
+          this.setUserData(response.user);
+        }
+      }),
+      catchError(this.handleError)
     );
   }
 
-  // Verificar si el email ya está registrado
-  checkEmailExists(email: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/users/check-email`, { params: { email } });
+  login(credentials: { username: string; password: string }): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/users/login`, credentials).pipe(
+      tap((response) => {
+        if (response.token) {
+          this.setToken(response.token);
+          this.setUserData(response.user);
+        }
+      }),
+      catchError(this.handleError)
+    );
   }
 
-  // Verificar si el usuario ya está registrado
-  checkUsernameExists(username: string) {
-    return this.http.get<{ exists: boolean }>(`${this.apiUrl}/check-username/${username}`);
+  checkEmailExists(email: string): Observable<EmailCheckResponse> {
+    return this.http.get<EmailCheckResponse>(`${this.apiUrl}/users/check-email`, {
+      params: { email }
+    }).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  // Configuración del token
-  setToken(token: string): void {
-    localStorage.setItem(this.tokenKey, token);
+  checkUsernameExists(username: string): Observable<UsernameCheckResponse> {
+    return this.http.get<UsernameCheckResponse>(`${this.apiUrl}/users/check-username`, {
+      params: { username }
+    }).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+  registerGuest(username: string): Observable<{ token: string }> {
+    return this.http.post<{ token: string; message: string }>(`${this.apiUrl}/users/guest-register`, { username }).pipe(
+      tap((response) => {
+        if (response.token) {
+          this.setToken(response.token);
+          // Guardar el username y el estado de invitado en el localStorage
+          this.setUserData({ username, isGuest: true });
+        }
+      }),
+      catchError(this.handleError)
+    );
   }
 
-  // Configuración de los datos del usuario
-  setUserData(user: any): void {
-    const userData = {
-      id: user.id || user.userId,
-      username: user.username,
-      name: user.name,
-      email: user.email
-    };
-    console.log('Guardando datos de usuario:', userData);
-    localStorage.setItem(this.userKey, JSON.stringify(userData));
+  migrateGuestUser(data: { username: string; email: string; password: string }): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/users/migrate-guest`, data).pipe(
+      tap(() => {
+        // Actualizar los datos del usuario en localStorage para reflejar que ya no es invitado
+        const user = this.getUserData();
+        if (user) {
+          this.setUserData({
+            ...user,
+            email: data.email,
+            isGuest: false
+          });
+        }
+      }),
+      catchError(this.handleError)
+    );
   }
 
-  getUserData(): any {
-    const userData = localStorage.getItem(this.userKey);
-    if (userData) {
-      const parsedData = JSON.parse(userData);
-      console.log('Datos recuperados del localStorage:', parsedData);
-      if (parsedData.id) {
-        return parsedData;
-      }
-    }
-
+  isAuthenticated(): boolean {
     const token = this.getToken();
-    if (token) {
-      const decodedToken = this.decodeToken(token);
-      console.log('Token decodificado:', decodedToken);
-      if (decodedToken && decodedToken.userId) {
-        return {
-          id: decodedToken.userId,
-          username: decodedToken.username,
-          type: 'registered'
-        };
-      }
-    }
-
-    return null;
-  }
-
-  // Verificar si el usuario está logueado
-// Cambiar isUserLoggedIn para devolver un Observable<boolean>
-  isUserLoggedIn(): Observable<boolean> {
-    const token = this.getToken();
-    if (!token) return of(false); // Usamos 'of' para devolver un Observable con valor false
+    if (!token) return false;
 
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       const expired = Date.now() >= payload.exp * 1000;
       if (expired) {
         this.logout();
-        return of(false); // Usamos 'of' para devolver un Observable con valor false
+        return false;
       }
-      return of(true); // Devuelve 'true' como Observable
+      return true;
     } catch {
       this.logout();
-      return of(false); // Devuelve 'false' como Observable
+      return false;
     }
   }
 
+  isGuestUser(): boolean {
+    const user = this.getUserData();
+    return !!user?.isGuest;
+  }
 
-  // Cerrar sesión
+  getUsername(): string | null {
+    const user = this.getUserData();
+    return user ? user.username : null;
+  }
+
   logout(): void {
-    localStorage.removeItem(this.tokenKey);
-    localStorage.removeItem(this.userKey);
-    localStorage.removeItem('guestId');
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
   }
 
-  // Obtener los encabezados con autorización
-  private getHeaders(): HttpHeaders {
-    const token = this.getToken();
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      Authorization: token ? `Bearer ${token}` : '',
-    });
+  // Métodos privados
+  private setToken(token: string): void {
+    localStorage.setItem(this.TOKEN_KEY, token);
   }
 
-  // Decodificar el token JWT
-  private decodeToken(token: string): any {
-    try {
-      return JSON.parse(atob(token.split('.')[1]));
-    } catch {
-      return null;
-    }
+  getToken(): string | null {
+    return localStorage.getItem(this.TOKEN_KEY);
   }
 
-  // Obtener la información actual del usuario
-  // Cambia 'private' por 'public' en el método 'getCurrentUserInfo'
-  public getCurrentUserInfo() {
-    const userData = this.getUserData();
-    if (userData && userData.id) {
-      return {
-        id: userData.id,
-        type: 'registered',
-        name: userData.username || userData.name
-      };
-    }
-
-    const token = this.getToken();
-    if (token) {
-      const decodedToken = this.decodeToken(token);
-      if (decodedToken && decodedToken.userId) {
-        return {
-          id: decodedToken.userId,
-          type: 'registered',
-          name: decodedToken.username
-        };
-      }
-    }
-
-    const guestId = this.getGuestId();
-    return {
-      id: guestId,
-      type: 'guest',
-      name: `Invitado ${Math.floor(Math.random() * 1000)}`
-    };
+  private setUserData(user: User): void {
+    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
   }
 
+  getUserData(): User | null {
+    const userData = localStorage.getItem(this.USER_KEY);
+    return userData ? JSON.parse(userData) : null;
+  }
 
-  // Obtener el ID del invitado
-  private getGuestId(): string {
-    let guestId = localStorage.getItem('guestId');
-    if (!guestId) {
-      guestId = `guest-${Date.now()}`;
-      localStorage.setItem('guestId', guestId);
+  private handleError(error: HttpErrorResponse) {
+    let errorMessage = 'Ha ocurrido un error desconocido';
+
+    if (error.error instanceof ErrorEvent) {
+      // Error del lado del cliente
+      errorMessage = `Error: ${error.error.message}`;
+    } else if (error.error && error.error.error) {
+      // Error del lado del servidor con mensaje específico
+      errorMessage = error.error.error;
+    } else {
+      // Otro tipo de error del lado del servidor
+      errorMessage = `Código de error: ${error.status}, Mensaje: ${error.statusText}`;
     }
-    return guestId;
+
+    console.error(errorMessage);
+    return throwError(() => new Error(errorMessage));
   }
 }

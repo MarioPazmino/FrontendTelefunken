@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';  // Importa HttpClientModule
 import Swal from 'sweetalert2';
 import { LoginModalComponent } from '../login-modal/login-modal.component';
+import {GuestLoginComponent} from '../guest-login/guest-login.component';
 
 @Component({
   selector: 'app-inicio',
   standalone: true,
-  imports: [CommonModule, LoginModalComponent, HttpClientModule],  // Agrega HttpClientModule aquí
+  imports: [CommonModule, LoginModalComponent, GuestLoginComponent, HttpClientModule],  // Agrega HttpClientModule aquí
   templateUrl: './inicio.component.html',
   styleUrls: ['./inicio.component.css']
 })
@@ -46,7 +47,7 @@ export class InicioComponent {
       image: 'assets/img/img5.jpg'
     }
   ];
-  
+
 
   constructor(private router: Router) {}
 
@@ -65,7 +66,15 @@ export class InicioComponent {
   }
 
   isModalVisible: boolean = false;
+  isGuestModalVisible: boolean = false;
 
+  openGuestModal() {
+    this.isGuestModalVisible = true;
+  }
+
+  closeGuestModal() {
+    this.isGuestModalVisible = false;
+  }
   openModal() {
     this.isModalVisible = true;
   }

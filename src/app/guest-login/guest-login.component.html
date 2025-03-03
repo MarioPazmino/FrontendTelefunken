@@ -1,0 +1,33 @@
+<div *ngIf="isVisible" class="fixed inset-0 bg-custom-dark bg-opacity-90 flex justify-center items-center transition-opacity duration-300 ease-in-out">
+  <div class="bg-custom-white p-6 rounded-2xl shadow-2xl w-96 transform transition-all scale-95 sm:scale-100">
+    <h2 class="text-2xl font-bold text-custom-dark text-center">Ingresar como Invitado</h2>
+    <div class="mt-4">
+      <label for="username" class="block text-sm font-medium text-custom-dark">Nombre de usuario</label>
+      <input
+        id="username"
+        [(ngModel)]="username"
+        type="text"
+        placeholder="Escribe tu nombre..."
+        class="mt-2 block w-full rounded-md border border-custom-gray shadow-sm focus:outline-none focus:ring-2 focus:ring-custom-turquoise focus:border-transparent px-4 py-2 text-custom-dark placeholder:text-custom-gray transition-all duration-300"
+        (input)="checkUsernameExistence()"
+      />
+      <p *ngIf="errorMessage" class="text-red-500 text-sm mt-2">{{ errorMessage }}</p>
+      <!-- Mostrar sugerencias solo si hay sugerencias disponibles -->
+      <ul *ngIf="showSuggestions" class="mt-2 text-sm text-custom-dark">
+        <li *ngFor="let suggestion of suggestedUsernames"
+            (click)="selectSuggestedUsername(suggestion)"
+            class="cursor-pointer hover:bg-custom-gray px-2 py-1 rounded-md">
+          {{ suggestion }}
+        </li>
+      </ul>
+    </div>
+    <div class="mt-6 flex justify-between">
+      <button (click)="closeModal()" class="bg-custom-gray hover:bg-custom-blue text-custom-white px-5 py-2 rounded-md shadow-md transition-all duration-300">
+        Cancelar
+      </button>
+      <button (click)="loginAsGuest()" class="bg-custom-turquoise hover:bg-opacity-80 text-custom-white px-5 py-2 rounded-md shadow-md transition-all duration-300">
+        Continuar
+      </button>
+    </div>
+  </div>
+</div>

@@ -18,7 +18,12 @@
     <h1>{{ title }}</h1>
     <p>Descubre la diversión y estrategia del juego de cartas Telefunken</p>
     <!-- Cambio: Usar solo click y manejar la navegación en TypeScript -->
-    <button (click)="startNewGame()">Iniciar Nuevo Juego</button>
+    <button (click)="openGuestModal()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg">
+      Iniciar Nuevo Juego
+    </button>
+
+    <!-- Modal de Invitado -->
+    <app-guest-login [isVisible]="isGuestModalVisible" (close)="closeGuestModal()"></app-guest-login>
   </section>
 
   <div class="rules-section">

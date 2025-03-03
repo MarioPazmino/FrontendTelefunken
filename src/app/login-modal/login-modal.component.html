@@ -1,139 +1,107 @@
-<div class="modal" *ngIf="isVisible">
-  <div class="modal-content">
-    <span class="close" (click)="closeModal()">&times;</span>
-    <h2>{{ isRegister ? 'Crear Cuenta' : 'Iniciar Sesión' }}</h2>
-    
-    <form (ngSubmit)="onSubmit()">
-      <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+<div *ngIf="isVisible" class="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300 ease-in-out">
+  <!-- Overlay -->
+  <div class="fixed inset-0 bg-custom-dark opacity-90 backdrop-blur-sm transition-opacity duration-300" (click)="closeModal()"></div>
 
-      <!-- Formulario de Inicio de Sesión -->
-      <div *ngIf="!isRegister">
-        <label for="username">Usuario</label>
-        <input 
-          type="text" 
-          id="username" 
-          [(ngModel)]="username" 
-          name="username" 
-          required 
-        />
-        <div *ngIf="!username && isSubmitted" class="error-message">
-          El campo usuario es obligatorio.
-        </div>
+  <!-- Modal -->
+  <div class="relative z-10 w-full max-w-md p-6 mx-4 bg-custom-blue rounded-2xl shadow-2xl transform transition-all scale-95 sm:scale-100">
+    <!-- Close button -->
+    <button
+      (click)="closeModal()"
+      class="absolute top-4 right-4 text-custom-gray hover:text-custom-turquoise transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
 
-        <label for="password">Contraseña</label>
+    <!-- Header -->
+    <div class="text-center mb-6">
+      <h2 class="text-2xl font-bold text-custom-turquoise">
+        {{ isRegister ? 'Crear cuenta' : 'Iniciar sesión' }}
+      </h2>
+      <p class="mt-2 text-sm text-custom-gray">
+        {{ isRegister ? '¿Ya tienes una cuenta?' : '¿No tienes una cuenta?' }}
+        <button
+          (click)="toggleRegister()"
+          class="text-custom-turquoise hover:underline font-medium ml-1">
+          {{ isRegister ? 'Inicia sesión' : 'Regístrate' }}
+        </button>
+      </p>
+    </div>
+
+    <!-- Form -->
+    <form (ngSubmit)="onSubmit()" class="space-y-4">
+      <!-- Username -->
+      <div>
+        <label for="username" class="block text-sm font-medium text-custom-white">Nombre de usuario</label>
         <input
-          type="password"
-          id="password"
-          [(ngModel)]="password"
-          name="password"
-          required
-          (ngModelChange)="onPasswordChange()"
-        />
-        <div *ngIf="!password && isSubmitted" class="error-message">
-          El campo contraseña es obligatorio.
-        </div>
-        <div *ngIf="passwordError" class="error-message">
-          {{ passwordError }}
-        </div>
+          type="text"
+          id="username"
+          [(ngModel)]="username"
+          name="username"
+          (ngModelChange)="onUsernameChange()"
+          class="mt-1 block w-full px-3 py-2 bg-custom-blue border border-custom-gray rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-custom-turquoise focus:border-transparent text-custom-white"
+          [class.border-red-500]="usernameError"
+          placeholder="Ingresa tu nombre de usuario"
+        >
+        <p *ngIf="usernameError" class="mt-1 text-sm text-red-500">{{ usernameError }}</p>
 
-        <p>
-          <a href="javascript:void(0)" (click)="toggleRegister()">
-            ¿No tienes una cuenta? Regístrate
-          </a>
-        </p>
+        <!-- Suggested usernames -->
+        <div *ngIf="showSuggestions && suggestedUsernames.length" class="mt-2 bg-custom-blue border border-custom-gray rounded-md shadow-sm p-2">
+          <p class="text-sm text-custom-white">Sugerencias:</p>
+          <ul class="space-y-2">
+            <li *ngFor="let suggestion of suggestedUsernames">
+              <button
+                (click)="selectSuggestedUsername(suggestion)"
+                class="text-sm text-custom-turquoise hover:text-custom-white transition-colors">
+                {{ suggestion }}
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
 
-      <!-- Formulario de Registro -->
+      <!-- Email (only for register) -->
       <div *ngIf="isRegister">
-        <label for="name">Nombre</label>
-        <input 
-          type="text" 
-          id="name" 
-          [(ngModel)]="name" 
-          name="name" 
-          required 
-          (ngModelChange)="onNameChange()"
-        />
-        <div *ngIf="!name && isSubmitted" class="error-message">
-          El campo nombre es obligatorio.
-        </div>
-
-        <label for="email">Correo Electrónico</label>
+        <label for="email" class="block text-sm font-medium text-custom-white">Correo electrónico</label>
         <input
           type="email"
           id="email"
           [(ngModel)]="email"
           name="email"
-          required
           (ngModelChange)="onEmailChange()"
-          (blur)="checkEmailExistence()"
-        />
-        <div *ngIf="!email && isSubmitted" class="error-message">
-          El campo correo es obligatorio.
-        </div>
-        <div *ngIf="emailError" class="error-message">
-          {{ emailError }}
-        </div>
-        <div *ngIf="emailExists" class="error-message">
-          El correo ya está registrado.
-        </div>
+          class="mt-1 block w-full px-3 py-2 bg-custom-blue border border-custom-gray rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-custom-turquoise focus:border-transparent text-custom-white"
+          [class.border-red-500]="emailError || emailExists"
+          placeholder="ejemplo@correo.com"
+        >
+        <p *ngIf="emailError" class="mt-1 text-sm text-red-500">{{ emailError }}</p>
+        <p *ngIf="emailExists" class="mt-1 text-sm text-red-500">Este correo ya está registrado</p>
+      </div>
 
-        <label for="username">Usuario</label>
-        <input 
-          type="text" 
-          id="username" 
-          [(ngModel)]="username" 
-          name="username" 
-          required
-          (ngModelChange)="onUsernameChange()"
-        />
-        <div *ngIf="!username && isSubmitted" class="error-message">
-          El campo usuario es obligatorio.
-        </div>
-        <div *ngIf="usernameError" class="error-message">
-          {{ usernameError }}
-        </div>
-
-        <!-- Sugerencias de nombres de usuario -->
-        <div *ngIf="suggestedUsernames.length > 0" class="username-suggestions">
-          <p>Sugerencias de nombres de usuario disponibles:</p>
-          <div class="suggestions-list">
-            <button
-              type="button"
-              *ngFor="let suggestion of suggestedUsernames"
-              (click)="selectSuggestedUsername(suggestion)"
-              class="suggestion-button"
-            >
-              {{ suggestion }}
-            </button>
-          </div>
-        </div>
-
-        <label for="password">Contraseña</label>
+      <!-- Password -->
+      <div>
+        <label for="password" class="block text-sm font-medium text-custom-white">Contraseña</label>
         <input
           type="password"
           id="password"
           [(ngModel)]="password"
           name="password"
-          required
           (ngModelChange)="onPasswordChange()"
-        />
-        <div *ngIf="!password && isSubmitted" class="error-message">
-          El campo contraseña es obligatorio.
-        </div>
-        <div *ngIf="passwordError" class="error-message">
-          {{ passwordError }}
-        </div>
-
-        <p>
-          <a href="javascript:void(0)" (click)="toggleRegister()">
-            ¿Ya tienes una cuenta? Inicia sesión
-          </a>
-        </p>
+          class="mt-1 block w-full px-3 py-2 bg-custom-blue border border-custom-gray rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-custom-turquoise focus:border-transparent text-custom-white"
+          [class.border-red-500]="passwordError"
+          placeholder="Ingresa tu contraseña"
+        >
+        <p *ngIf="passwordError" class="mt-1 text-sm text-red-500">{{ passwordError }}</p>
       </div>
 
-      <button type="submit" [disabled]="!isFormValid()">
-        {{ isRegister ? 'Registrar' : 'Entrar' }}
+      <!-- Error message -->
+      <p *ngIf="errorMessage" class="text-sm text-red-500 text-center">{{ errorMessage }}</p>
+
+      <!-- Submit button -->
+      <button
+        type="submit"
+        [disabled]="!isFormValid()"
+        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-custom-white bg-custom-turquoise hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-turquoise disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+        {{ isRegister ? 'Crear cuenta' : 'Iniciar sesión' }}
       </button>
     </form>
   </div>

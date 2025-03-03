@@ -17,13 +17,11 @@ import { NgIf } from '@angular/common';
   ]
 })
 export class GameInterfaceComponent implements OnInit {
-  gameCode: string = '';  // Código generado para la partida
-  isModalOpen: boolean = false;  // Controla la visibilidad del modal
-  isLoggedIn: boolean = false;  // Indica si el usuario está logueado
-  userId: string = '';  // ID del usuario
-  playerName: string = '';  // Nombre del jugador
-  codeInput: string = '';  // Código ingresado por el usuario
-  showGameCode: boolean = false;  // Controla la visibilidad del código de la partida
+  gameCode: string = '';
+  isModalOpen: boolean = false;
+  isLoading: boolean = false;
+  codeInput: string = '';
+  showGameCode: boolean = false;
 
   constructor(
     private authService: AuthService,
@@ -32,150 +30,202 @@ export class GameInterfaceComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.checkUserAuthentication();  // Verificar si el usuario está autenticado
-    this.generateGameCode(); // Generar el código de la partida
-    console.log('gameCode (onInit):', this.gameCode); // Verificar el código generado
+    // Generar código al inicializar el componente
+    this.generateGameCode();
+    console.log('Código de juego generado:', this.gameCode);
   }
 
-// Generar un código único para la partida
+  // Genera un código aleatorio usando el método del servicio
   generateGameCode(): void {
-    this.gameCode = Math.random().toString(36).substring(2, 8).toUpperCase();  // Generación del código en frontend
+    this.gameCode = this.gameService.generateRandomGameCode();
   }
 
-
-
-
-  // Verifica si el usuario está autenticado y obtiene los datos del usuario
-  // Verifica si el usuario está autenticado y obtiene los datos del usuario
-  checkUserAuthentication(): void {
-    this.authService.isUserLoggedIn().subscribe({
-      next: (isLoggedIn: boolean) => {
-        this.isLoggedIn = isLoggedIn;
-        if (this.isLoggedIn) {
-          const userData = this.authService.getUserData();
-          this.userId = userData.id;
-          this.playerName = userData.username || userData.name || 'Jugador';
-        } else {
-          this.userId = 'guest';
-          this.playerName = 'Invitado';
-        }
-        console.log('Authentication checked:', { isLoggedIn: this.isLoggedIn, userId: this.userId });
-      },
-      error: (error) => {
-        console.error('Error checking authentication:', error);
-        this.isLoggedIn = false;
-        this.userId = 'guest';
-        this.playerName = 'Invitado';
-      }
-    });
+  // Verifica si el usuario está autenticado
+  get isLoggedIn(): boolean {
+    return this.authService.isAuthenticated();
   }
 
+  // Obtiene el nombre de usuario actual
+  get username(): string {
+    return this.authService.getUsername() || '';
+  }
 
-  // Crear una nueva partida
+  // Crea una nueva partida
   createGame(): void {
-    console.log('Creando partida...');
+    this.isLoading = true;
+    console.log('Iniciando creación de partida con código:', this.gameCode);
+
+    // Determina el tipo de usuario (registrado o invitado)
+    const creatorType = this.isLoggedIn ? 'registered' : 'guest';
     const isTemporary = !this.isLoggedIn;
-    const playerType = this.isLoggedIn ? 'registered' : 'guest';
 
-    // Enviar los datos al backend
-    this.gameService.createGame(this.userId, playerType, isTemporary, this.gameCode).subscribe({
+    this.gameService.createGame(creatorType, isTemporary, this.gameCode).subscribe({
       next: (response) => {
-        console.log('Respuesta de crear juego:', response);
+        console.log('Partida creada exitosamente:', response);
 
-        // Usar el código recibido del backend si lo modifica
-        this.gameCode = response.code || this.gameCode;
+        // Guarda el código de la partida (si el backend lo cambia)
+        this.gameCode = response.game.code;
         this.showGameCode = true;
 
-        setTimeout(() => {
-          if (this.gameCode) {
-            Swal.fire('Partida creada', `Código: ${this.gameCode}`, 'success');
-            if (response.gameId) {
-              this.router.navigate(['/sala-espera', response.gameId]);  // Redirigir a la sala de espera
-            }
-          } else {
-            throw new Error('No se recibió un código de juego válido');
-          }
-        });
+        // Navega directamente a la sala de espera sin mostrar alertas
+        this.router.navigate(['/sala-espera', response.game.gameId]);
       },
       error: (error) => {
         console.error('Error al crear la partida:', error);
-        Swal.fire('Error', 'No se pudo crear la partida', 'error');
+        Swal.fire({
+          title: 'Error',
+          text: error.error?.message || 'No se pudo crear la partida',
+          icon: 'error'
+        });
+      },
+      complete: () => {
+        this.isLoading = false;
       }
     });
   }
 
-
-
-  // Abrir el modal para unirse a una partida
+  // Abre el modal para unirse a una partida
   openModal(): void {
     this.isModalOpen = true;
+    this.codeInput = '';
   }
 
-  // Cerrar el modal
+  // Cierra el modal
   closeModal(): void {
     this.isModalOpen = false;
   }
 
-  // Unirse a una partida
+  // Envía el código para unirse a una partida
   submitCode(): void {
-    const trimmedCode = this.codeInput.trim().toUpperCase(); // Asegurarse de que el código esté en mayúsculas
-    if (!trimmedCode) {
+    if (!this.codeInput.trim()) {
       Swal.fire('Error', 'Ingresa un código válido', 'error');
       return;
     }
 
-    const playerType = this.isLoggedIn ? 'registered' : 'guest'; // Determina el tipo de jugador basado en si está logueado
+    const formattedCode = this.codeInput.trim().toUpperCase();
+    this.isLoading = true;
 
-    // Verifica los parámetros antes de enviarlos
-    console.log('Payload para unirse a la partida:', {
-      gameCode: trimmedCode,
-      userId: this.userId,
-      playerType,
-      playerName: this.playerName
+    console.log('Intentando unirse a la partida:', {
+      gameCode: formattedCode
     });
 
-    // Llamada al servicio para unirse a la partida
-    this.gameService.joinGame(trimmedCode, this.userId, playerType, this.playerName).subscribe({
-      next: (response) => {
-        Swal.fire('Unido a la partida', `Bienvenido a la partida ${trimmedCode}`, 'success');
-        this.router.navigate(['/sala-espera', response.gameId]);
+    this.gameService.joinGame(formattedCode).subscribe({
+      next: (gameData) => {
+        console.log('Unido a la partida exitosamente:', gameData);
+
+        Swal.fire({
+          title: 'Unido a la partida',
+          text: `Bienvenido a la partida ${formattedCode}`,
+          icon: 'success',
+          timer: 1500
+        });
+
         this.closeModal();
+        this.router.navigate(['/sala-espera', gameData.gameId]);
       },
       error: (error) => {
-        const errorMessage = error.error?.message || 'No se pudo unir a la partida';
-        Swal.fire('Error', errorMessage, 'error');
         console.error('Error al unirse a la partida:', error);
+
+        Swal.fire({
+          title: 'Error',
+          text: error.error?.message || 'No se pudo unir a la partida',
+          icon: 'error'
+        });
       },
+      complete: () => {
+        this.isLoading = false;
+      }
     });
   }
 
-
-  // Dejar una partida
-  leaveGame(): void {
-    if (!this.gameCode || !this.userId) {
-      Swal.fire('Error', 'No puedes abandonar una partida sin estar en una', 'error');
+  // Abandona la partida actual
+  leaveGame(gameId: string): void {
+    if (!gameId) {
+      Swal.fire('Error', 'No hay una partida activa para abandonar', 'error');
       return;
     }
 
-    this.gameService.leaveGame(this.gameCode, this.userId).subscribe({
-      next: (response) => {
-        Swal.fire('Has salido de la partida', 'Esperamos verte pronto', 'success');
-        this.router.navigate(['/']); // Redirigir al usuario al inicio
-      },
-      error: (error) => {
-        Swal.fire('Error', 'No se pudo abandonar la partida', 'error');
-        console.error(error);
-      },
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Abandonarás la partida actual',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, salir',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.isLoading = true;
+
+        this.gameService.leaveGame(gameId).subscribe({
+          next: (response) => {
+            console.log('Partida abandonada:', response);
+
+            Swal.fire({
+              title: 'Has salido de la partida',
+              text: 'Has abandonado la partida exitosamente',
+              icon: 'success',
+              timer: 1500
+            });
+
+            this.router.navigate(['/']);
+          },
+          error: (error) => {
+            console.error('Error al abandonar la partida:', error);
+
+            Swal.fire({
+              title: 'Error',
+              text: error.error?.message || 'No se pudo abandonar la partida',
+              icon: 'error'
+            });
+          },
+          complete: () => {
+            this.isLoading = false;
+          }
+        });
+      }
     });
   }
 
-
-  // Copiar el código de la partida al portapapeles
+  // Copia el código de la partida al portapapeles
   copyCode(): void {
-    if (this.gameCode) {
-      navigator.clipboard.writeText(this.gameCode).then(() => {
-        Swal.fire('Copiado', 'El código se ha copiado al portapapeles', 'success');
+    if (!this.gameCode) return;
+
+    navigator.clipboard.writeText(this.gameCode).then(() => {
+      Swal.fire({
+        title: 'Código copiado',
+        text: 'El código se ha copiado al portapapeles',
+        icon: 'success',
+        timer: 1500,
+        position: 'top-end',
+        toast: true,
+        showConfirmButton: false
       });
+    }).catch((error) => {
+      console.error('Error al copiar al portapapeles:', error);
+      Swal.fire('Error', 'No se pudo copiar el código', 'error');
+    });
+  }
+
+  // Inicia la sesión de juego y redirige a la sala de espera
+  startGameSession(gameCode: string): void {
+    if (!gameCode) {
+      Swal.fire('Error', 'Código de partida no válido', 'error');
+      return;
     }
+
+    this.isLoading = true;
+    this.gameService.startGameSession(gameCode).subscribe({
+      next: (gameData) => {
+        console.log('Sesión de juego iniciada:', gameData);
+        this.router.navigate(['/sala-espera', gameData.gameId]);
+      },
+      error: (error) => {
+        console.error('Error al iniciar sesión de juego:', error);
+        Swal.fire('Error', error.error?.message || 'No se pudo iniciar la sesión de juego', 'error');
+      },
+      complete: () => {
+        this.isLoading = false;
+      }
+    });
   }
 }
