@@ -1,119 +1,252 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { AuthService } from './auth.service';
-import { WaitingRoomService, WaitingRoomStatus } from './waiting-room.service';
+
+interface GameAction {
+  actionType: string;
+  data?: any;
+  nextTurn?: string;
+}
 
 @Injectable({
   providedIn: 'root',
 })
-export class GameSessionService {
+export class GameSessionService implements OnDestroy {
   private socket: Socket;
   private apiUrl = 'http://localhost:3000'; // URL del servidor backend
+  private disconnectSubject = new Subject<void>();
 
-  constructor(
-    private authService: AuthService,
-    private waitingRoomService: WaitingRoomService
-  ) {
-    // Inicializar la conexión con el servidor de WebSockets
+  constructor(private authService: AuthService) {
+    // En el constructor del servicio
     this.socket = io(this.apiUrl, {
-      auth: {
-        token: this.authService.getToken(), // Enviar el token de autenticación
-      },
+      withCredentials: true, // ¡Debe coincidir con el backend!
+      transports: ['websocket', 'polling'] // Agrega otros transportes si es necesario
     });
 
     // Manejar errores de conexión
     this.socket.on('connect_error', (err) => {
       console.error('Error de conexión con el servidor de WebSockets:', err);
     });
+
+    // Autenticar al usuario después de conectarse
+    this.socket.on('connect', () => {
+      console.log('Conectado al servidor de WebSockets');
+      this.authenticateUser();
+    });
+
+    // Registrar eventos de autenticación
+    this.socket.on('authenticated', (data) => {
+      console.log('Usuario autenticado en WebSockets:', data);
+    });
+
+    // Registrar eventos de error
+    this.socket.on('error', (error) => {
+      console.error('Error en WebSockets:', error);
+    });
+  }
+
+  /**
+   * Autenticar al usuario con el servidor de WebSockets
+   */
+  private authenticateUser(): void {
+    const username = this.authService.getUsername();
+    if (username) {
+      this.socket.emit('authenticate', { username });
+    } else {
+      console.error('No se pudo autenticar: nombre de usuario no disponible');
+    }
   }
 
   /**
    * Unirse a una sala de juego específica
    * @param gameId El ID de la partida a la que se unirá el jugador
+   * @param gameCode El código de la partida
    */
-  joinGame(gameId: string): void {
-    this.socket.emit('joinGame', gameId);
-  }
-
-  /**
-   * Iniciar la partida
-   * @param gameId El ID de la partida que se va a iniciar
-   */
-  startGame(gameId: string): Observable<WaitingRoomStatus & { matchId: string }> {
-    return this.waitingRoomService.startGame(gameId);
-  }
-
-  /**
-   * Registrar una acción en la partida (comprar ficha, pasar turno, etc.)
-   * @param gameId El ID de la partida
-   * @param action La acción que se está registrando
-   */
-  recordAction(gameId: string, action: string): Observable<any> {
+  joinGame(gameId: string, gameCode: string): void {
     const username = this.authService.getUsername();
-
     if (!username) {
       throw new Error('Usuario no autenticado');
     }
 
-    return new Observable((observer) => {
-      this.socket.emit('recordAction', { gameId, username, action }, (response: any) => {
-        observer.next(response);
-        observer.complete();
-      });
+    this.socket.emit('joinGame', { gameId, gameCode, username });
+  }
+
+  /**
+   * Abandonar una sala de juego
+   * @param gameId El ID de la partida que se va a abandonar
+   * @param gameCode El código de la partida
+   */
+  leaveGame(gameId: string, gameCode: string): void {
+    const username = this.authService.getUsername();
+    if (!username) {
+      throw new Error('Usuario no autenticado');
+    }
+
+    this.socket.emit('leaveGame', { gameId, gameCode, username });
+  }
+
+  /**
+   * Realizar una acción en el juego
+   * @param gameId El ID de la partida
+   * @param gameCode El código de la partida
+   * @param actionType El tipo de acción (card_purchase, card_discard, game_played, etc.)
+   * @param data Datos adicionales de la acción
+   * @param nextTurn Opcional: nombre de usuario del siguiente jugador
+   */
+  gameAction(gameId: string, gameCode: string, actionType: string, data: any, nextTurn?: string): void {
+    const username = this.authService.getUsername();
+    if (!username) {
+      throw new Error('Usuario no autenticado');
+    }
+
+    this.socket.emit('gameAction', {
+      gameId,
+      gameCode,
+      actionType,
+      username,
+      data,
+      nextTurn
     });
   }
 
   /**
-   * Finalizar la partida
-   * @param gameId El ID de la partida que se va a finalizar
+   * Comprar una carta
+   * @param gameId El ID de la partida
+   * @param gameCode El código de la partida
+   * @param card La carta comprada
+   * @param tokensUsed Los tokens utilizados
    */
-  endGame(gameId: string): Observable<any> {
-    return new Observable((observer) => {
-      this.socket.emit('endGame', { gameId }, (response: any) => {
-        observer.next(response);
-        observer.complete();
-      });
-    });
+  purchaseCard(gameId: string, gameCode: string, card: any, tokensUsed: number): void {
+    this.gameAction(gameId, gameCode, 'card_purchase', { card, tokensUsed });
   }
 
   /**
-   * Escuchar eventos de inicio de partida
+   * Descartar una carta
+   * @param gameId El ID de la partida
+   * @param gameCode El código de la partida
+   * @param card La carta descartada
    */
-  onGameStarted(): Observable<any> {
+  discardCard(gameId: string, gameCode: string, card: any): void {
+    this.gameAction(gameId, gameCode, 'card_discard', { card });
+  }
+
+  /**
+   * Jugar cartas (trío, cuarteto, escalera, etc.)
+   * @param gameId El ID de la partida
+   * @param gameCode El código de la partida
+   * @param gameType El tipo de juego (trío, cuarteto, escalera)
+   * @param cards Las cartas jugadas
+   */
+  playGame(gameId: string, gameCode: string, gameType: string, cards: any[]): void {
+    this.gameAction(gameId, gameCode, 'game_played', { gameType, cards });
+  }
+
+  /**
+   * Escuchar por jugadores que se unen a la partida
+   */
+  onPlayerJoined(): Observable<any> {
     return new Observable((observer) => {
-      this.socket.on('gameStarted', (data: any) => {
+      this.socket.on('playerJoined', (data) => {
         observer.next(data);
       });
+
+      return () => {
+        this.socket.off('playerJoined');
+      };
     });
   }
 
   /**
-   * Escuchar eventos de acciones registradas
+   * Escuchar por jugadores que abandonan la partida
    */
-  onActionRecorded(): Observable<any> {
+  onPlayerLeft(): Observable<any> {
     return new Observable((observer) => {
-      this.socket.on('actionRecorded', (data: any) => {
+      this.socket.on('playerLeft', (data) => {
         observer.next(data);
       });
+
+      return () => {
+        this.socket.off('playerLeft');
+      };
     });
   }
 
   /**
-   * Escuchar eventos de finalización de partida
+   * Escuchar por jugadores que se desconectan
    */
-  onGameEnded(): Observable<any> {
+  onPlayerDisconnected(): Observable<any> {
     return new Observable((observer) => {
-      this.socket.on('gameEnded', (data: any) => {
+      this.socket.on('playerDisconnected', (data) => {
         observer.next(data);
       });
+
+      return () => {
+        this.socket.off('playerDisconnected');
+      };
     });
+  }
+
+  /**
+   * Escuchar cambios en el estado del juego
+   */
+  onGameState(): Observable<any> {
+    return new Observable((observer) => {
+      this.socket.on('gameState', (data) => {
+        observer.next(data);
+      });
+
+      return () => {
+        this.socket.off('gameState');
+      };
+    });
+  }
+
+  /**
+   * Escuchar actualizaciones de acciones
+   */
+  onActionUpdate(): Observable<any> {
+    return new Observable((observer) => {
+      this.socket.on('actionUpdate', (data) => {
+        observer.next(data);
+      });
+
+      return () => {
+        this.socket.off('actionUpdate');
+      };
+    });
+  }
+
+  /**
+   * Escuchar cambios de turno
+   */
+  onTurnChanged(): Observable<any> {
+    return new Observable((observer) => {
+      this.socket.on('turnChanged', (data) => {
+        observer.next(data);
+      });
+
+      return () => {
+        this.socket.off('turnChanged');
+      };
+    });
+  }
+
+  /**
+   * Verificar si el socket está conectado
+   */
+  isConnected(): boolean {
+    return this.socket && this.socket.connected;
   }
 
   /**
    * Desconectar el socket cuando el servicio se destruye
    */
   ngOnDestroy(): void {
-    this.socket.disconnect();
+    if (this.socket) {
+      this.socket.disconnect();
+    }
+    this.disconnectSubject.next();
+    this.disconnectSubject.complete();
   }
 }

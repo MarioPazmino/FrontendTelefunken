@@ -1,54 +1,217 @@
-<div class="p-6 bg-gray-100 min-h-screen">
-  <div *ngIf="isLoading" class="text-center">
-    <p class="text-gray-700">Cargando estado del juego...</p>
+<!-- Pantalla de carga -->
+<div *ngIf="isLoading" class="flex flex-col items-center justify-center h-screen bg-custom-dark text-custom-white p-6">
+  <h2 class="text-2xl font-bold mb-6">Cargando estado del juego...</h2>
+  <div class="w-16 h-16 border-4 border-custom-turquoise border-t-transparent rounded-full animate-spin"></div>
+</div>
+
+<!-- Mensaje de error -->
+<div *ngIf="error" class="flex items-center justify-center h-screen bg-custom-dark p-6">
+  <div class="bg-red-600 text-custom-white p-6 rounded-lg shadow-lg max-w-md">
+    <h2 class="text-xl font-bold mb-2">Error</h2>
+    <p>{{ error }}</p>
+    <button (click)="leaveGameTable()" class="mt-4 px-4 py-2 bg-custom-blue hover:bg-opacity-80 text-custom-white rounded-md transition-colors duration-200">
+      Volver al lobby
+    </button>
   </div>
+</div>
 
-  <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-    {{ error }}
+<!-- Mensaje de ganador -->
+<div *ngIf="winner" class="flex flex-col items-center justify-center h-screen bg-custom-dark text-custom-white p-6">
+  <div class="bg-custom-blue p-8 rounded-lg shadow-lg max-w-md text-center">
+    <div class="w-24 h-24 rounded-full bg-custom-turquoise flex items-center justify-center mx-auto mb-6">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-custom-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+    </div>
+    <h2 class="text-3xl font-bold mb-2">¡El ganador es {{ winner }}!</h2>
+    <p *ngIf="gameState?.results?.scores" class="text-custom-gray mb-6">Puntuación final: {{ gameState.results.scores[winner] || 0 }} puntos</p>
+    <button (click)="leaveGameTable()" class="px-6 py-3 bg-custom-turquoise hover:bg-opacity-80 text-custom-dark font-bold rounded-md transition-colors duration-200">
+      Volver al lobby
+    </button>
   </div>
+</div>
 
-  <div *ngIf="!isLoading && !error" class="max-w-4xl mx-auto">
-    <h1 class="text-2xl font-bold text-gray-800 mb-6">Tabla de Juego</h1>
+<!-- Tabla de juego principal -->
+<div *ngIf="!isLoading && !winner" class="min-h-screen bg-custom-dark text-custom-white">
+  <!-- Cabecera del juego mejorada -->
+  <header class="bg-custom-blue border-b-2 border-custom-turquoise shadow-lg">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center">
+          <div class="bg-custom-dark rounded-md px-4 py-2 mr-4 flex items-center shadow-md">
+            <span class="text-custom-turquoise mr-2 font-bold text-xl">#</span>
+            <span class="text-xl font-bold">{{ gameCode }}</span>
+          </div>
+          <h1 class="text-2xl font-bold hidden md:block">
+            <span class="text-custom-turquoise">Game</span><span>Table</span>
+          </h1>
+        </div>
+        <button (click)="leaveGameTable()" class="px-4 py-2 bg-custom-dark hover:bg-custom-dark hover:border-custom-turquoise border border-transparent text-custom-white rounded-md transition-all duration-200 flex items-center shadow-md">
+          <span class="mr-2">Salir</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-custom-turquoise" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
 
-    <!-- Tabla de jugadores y puntuaciones -->
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
-      <table class="min-w-full">
-        <thead class="bg-gray-50">
-        <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jugador</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Puntuación</th>
-        </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-200">
-        <tr *ngFor="let player of players" class="hover:bg-gray-50">
-          <td class="px-6 py-4 whitespace-nowrap">
-            <div class="flex items-center">
-              <span class="text-sm font-medium text-gray-900">{{ player.username }}</span>
-              <span *ngIf="currentPlayer && currentPlayer.username === player.username" class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">Turno actual</span>
-            </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ scores[player.username] || 0 }} puntos</td>
-        </tr>
-        </tbody>
-      </table>
+  <!-- Contenedor principal con padding-top para evitar solapamiento -->
+  <div class="container mx-auto px-4 py-6 pt-32"> <!-- Añadido pt-20 para dar espacio -->
+    <!-- Información del turno actual -->
+    <div class="rounded-lg p-4 mb-6 transition-colors duration-300 shadow-md"
+         [ngClass]="{'bg-custom-turquoise text-custom-dark': isMyTurn, 'bg-custom-blue': !isMyTurn}">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <div *ngIf="currentTurn" class="w-10 h-10 rounded-full bg-custom-dark flex items-center justify-center mr-3 border-2"
+               [ngClass]="{'border-custom-dark': isMyTurn, 'border-custom-turquoise': !isMyTurn}">
+            {{ currentTurn.charAt(0) }}
+          </div>
+          <h3 *ngIf="currentTurn" class="font-bold text-lg">Turno de: {{ currentTurn }}</h3>
+        </div>
+        <div *ngIf="isMyTurn" class="flex items-center bg-custom-dark px-3 py-1 rounded-full">
+          <span class="animate-pulse mr-2 text-custom-turquoise">●</span>
+          <span class="font-bold text-custom-white">¡Es tu turno!</span>
+        </div>
+      </div>
     </div>
 
-    <!-- Acciones del jugador -->
-    <div *ngIf="isMyTurn" class="mt-6">
-      <h2 class="text-lg font-semibold text-gray-800 mb-4">Tu turno</h2>
-      <div class="flex space-x-4">
-        <button
-          (click)="performAction('comprarFicha')"
-          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Comprar ficha
-        </button>
-        <button
-          (click)="performAction('pasarTurno')"
-          class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-        >
-          Pasar turno
-        </button>
+    <!-- Contenido principal del juego -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Sección de jugadores -->
+      <div class="lg:col-span-1">
+        <div class="bg-custom-blue rounded-lg shadow-lg overflow-hidden">
+          <div class="bg-custom-turquoise px-4 py-3 text-custom-dark font-bold border-b-2 border-custom-dark">
+            Jugadores
+          </div>
+          <div class="p-4">
+            <div class="space-y-3">
+              <div *ngFor="let player of players"
+                   class="bg-custom-dark rounded-md p-3 transition-all duration-200 shadow-md"
+                   [ngClass]="{'border-l-4 border-custom-turquoise': player.username === currentTurn, 'border-l-4 border-transparent': player.username !== currentTurn}">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-full bg-custom-blue flex items-center justify-center mr-3 border-2 border-custom-gray">
+                      {{ player.username.charAt(0) }}
+                    </div>
+                    <div>
+                      <h4 class="font-medium">{{ player.username }}</h4>
+                      <span *ngIf="gameState?.scores" class="text-sm text-custom-gray">
+                        {{ gameState.scores[player.username] || 0 }} puntos
+                      </span>
+                    </div>
+                  </div>
+                  <span *ngIf="player.username === currentTurn" class="w-3 h-3 rounded-full bg-custom-turquoise animate-pulse"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones y estado del juego -->
+      <div class="lg:col-span-2">
+        <!-- Sección de acciones para el jugador actual -->
+        <div *ngIf="isMyTurn" class="bg-custom-blue rounded-lg shadow-lg mb-6 overflow-hidden">
+          <div class="bg-custom-turquoise px-4 py-3 text-custom-dark font-bold border-b-2 border-custom-dark">
+            Tu turno - Acciones disponibles
+          </div>
+          <div class="p-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <button (click)="purchaseCard({id: 'exampleCard'}, 1)" class="bg-custom-dark hover:bg-custom-blue p-3 rounded-md flex flex-col items-center justify-center transition-all duration-200 shadow-md border border-transparent hover:border-custom-turquoise">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-2 text-custom-turquoise" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span class="text-sm">Comprar carta</span>
+              </button>
+              <button (click)="discardCard({id: 'exampleCard'})" class="bg-custom-dark hover:bg-custom-blue p-3 rounded-md flex flex-col items-center justify-center transition-all duration-200 shadow-md border border-transparent hover:border-custom-turquoise">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-2 text-custom-gray" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span class="text-sm">Descartar carta</span>
+              </button>
+              <button (click)="playGame('trio', [{id: 'card1'}, {id: 'card2'}, {id: 'card3'}])" class="bg-custom-dark hover:bg-custom-blue p-3 rounded-md flex flex-col items-center justify-center transition-all duration-200 shadow-md border border-transparent hover:border-custom-turquoise">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-2 text-custom-turquoise" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="text-sm">Jugar trío</span>
+              </button>
+              <button (click)="endTurn()" class="bg-custom-dark hover:bg-custom-blue p-3 rounded-md flex flex-col items-center justify-center transition-all duration-200 shadow-md border border-transparent hover:border-custom-turquoise">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-2 text-custom-gray" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                </svg>
+                <span class="text-sm">Pasar turno</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Registro de acciones recientes -->
+        <div class="bg-custom-blue rounded-lg shadow-lg mb-6 overflow-hidden">
+          <div class="px-4 py-3 font-bold border-b-2 border-custom-dark flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-custom-turquoise" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Últimas acciones
+          </div>
+          <div class="p-4">
+            <div class="space-y-2 max-h-40 overflow-y-auto">
+              <div *ngFor="let action of actions.slice().reverse().slice(0, 5)" class="bg-custom-dark rounded-md p-2 text-sm shadow-md">
+                <div class="flex items-start">
+                  <div class="w-8 h-8 rounded-full bg-custom-blue flex items-center justify-center mr-3 flex-shrink-0 border border-custom-gray">
+                    {{ action.username.charAt(0) }}
+                  </div>
+                  <div>
+                    <p>
+                      <strong class="text-custom-turquoise">{{ action.username }}</strong>:
+                      <span [ngSwitch]="action.actionType">
+                        <span *ngSwitchCase="'card_purchase'" class="text-custom-gray">Compró una carta</span>
+                        <span *ngSwitchCase="'card_discard'" class="text-custom-gray">Descartó una carta</span>
+                        <span *ngSwitchCase="'game_played'" class="text-custom-gray">Jugó un {{ action.data?.gameType }}</span>
+                        <span *ngSwitchCase="'end_turn'" class="text-custom-gray">Pasó su turno</span>
+                        <span *ngSwitchDefault class="text-custom-gray">{{ action.actionType }}</span>
+                      </span>
+                    </p>
+                    <p class="text-xs text-custom-gray mt-1" *ngIf="action.timestamp">
+                      {{ action.timestamp | date:'short' }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <p *ngIf="actions.length === 0" class="text-custom-gray italic">No hay acciones recientes</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estado actual del juego -->
+        <div class="bg-custom-blue rounded-lg shadow-lg overflow-hidden">
+          <div class="px-4 py-3 font-bold border-b-2 border-custom-dark flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-custom-turquoise" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            Estado de la partida
+          </div>
+          <div class="p-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-custom-dark rounded-md p-3 shadow-md">
+                <p class="text-custom-gray text-sm mb-1">Jugadores conectados</p>
+                <p class="text-2xl font-bold">{{ players.length }} <span class="text-xs text-custom-turquoise">/ 6</span></p>
+              </div>
+              <div class="bg-custom-dark rounded-md p-3 shadow-md">
+                <p class="text-custom-gray text-sm mb-1">Ronda actual</p>
+                <p class="text-2xl font-bold">{{ gameState?.currentRound || 1 }}</p>
+              </div>
+              <div class="bg-custom-dark rounded-md p-3 shadow-md col-span-2">
+                <p class="text-custom-gray text-sm mb-1">Cartas en mazo</p>
+                <p class="text-2xl font-bold">{{ gameState?.deckCount || 0 }}</p>
+                <div class="w-full bg-custom-blue h-2 mt-2 rounded-full overflow-hidden">
+                  <div class="bg-custom-turquoise h-full" [style.width]="((gameState?.deckCount || 0) / (gameState?.totalCards || 100)) * 100 + '%'"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

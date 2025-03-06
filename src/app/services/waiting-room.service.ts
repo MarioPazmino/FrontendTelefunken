@@ -136,20 +136,17 @@ export class WaitingRoomService {
    * Starts the game associated with the waiting room
    * @param gameCode The code of the game to start
    */
-  startGame(gameCode: string): Observable<WaitingRoomStatus & { matchId: string }> {
+  startGame(gameCode: string): Observable<WaitingRoomStatus & { gameSession: any, gameId: string }> {
     console.log('Payload enviado en POST /start:', { gameCode });
 
-    return this.http.post<WaitingRoomStatus & { matchId: string }>(
+    return this.http.post<WaitingRoomStatus & { gameSession: any, gameId: string }>(
       `${this.apiUrl}/start`,
-      { gameCode }, // Asegúrate de que gameCode sea válido
+      { gameCode },
       { headers: this.getHeaders() }
-
     ).pipe(
       tap(response => console.log('Game started:', response)),
       catchError(error => {
         console.error('Error starting game:', error);
-        console.log('Payload enviado en POST /start:', { gameCode });
-
         return throwError(() => new Error(`Failed to start game: ${error.message}`));
       })
     );

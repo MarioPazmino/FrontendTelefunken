@@ -10,6 +10,7 @@ module.exports = {
         'custom-gray': '#8D9997',   // Gris claro
         'custom-white': '#FFFFFF',  // Blanco
         'custom-turquoise': '#02CDAD', // Turquesa
+
       },
       opacity: {
         '90': '0.9', // Agrega una opacidad del 90%
