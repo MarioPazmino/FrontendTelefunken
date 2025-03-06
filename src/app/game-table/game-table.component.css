@@ -2,3 +2,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --color-primary: #02CDAD;       /* Color principal */
+  --color-background: #001512;    /* Fondo oscuro */
+  --color-card: #04272D;          /* Fondo de tarjetas */
+  --color-text-muted: #8D9997;    /* Texto secundario */
+  --color-text: #FFFFFF;          /* Texto principal */
+  --color-border: #02CDAD;        /* Bordes destacados */
+}
+
+
+body, html {
+  background-color: #001512 !important;
+}

@@ -10,5 +10,5 @@ export const routes: Routes = [
   { path: 'inicio', component: InicioComponent },
   { path: 'game-interface', component: GameInterfaceComponent },
   { path: 'sala-espera/:gameId', component: SalaEsperaComponent },
-  { path: 'game-table/:gameId', component: GameTableComponent }, // Agregar gameCode como parámetro
+  { path: 'game-table/:gameId/:gameCode', component: GameTableComponent }, // Agregar gameCode como parámetro
 ];

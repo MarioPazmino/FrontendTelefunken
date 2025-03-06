@@ -94,7 +94,7 @@ export class SalaEsperaComponent implements OnInit, OnDestroy {
 
         // Redirigir si el juego ha comenzado
         if (status.status === 'started') {
-          this.router.navigate(['/game-table', this.gameId]);
+          this.router.navigate(['/game-table', this.gameId, this.gameCode]);
         }
       },
       error: (error: any) => console.error('Error en el polling:', error)
@@ -111,31 +111,58 @@ export class SalaEsperaComponent implements OnInit, OnDestroy {
       gameCode: this.gameCode
     });
 
-
+    // Validate minimum players
     if (!this.canStartGame) {
       Swal.fire('Error', `Se necesitan al menos ${this.minPlayers} jugadores para comenzar`, 'warning');
       return;
     }
 
+    // Validate host permissions
     if (!this.isHost) {
       Swal.fire('Error', 'Solo el anfitrión puede iniciar el juego', 'warning');
       return;
     }
 
+    // Additional validation to ensure gameCode exists
+    if (!this.gameCode) {
+      Swal.fire('Error', 'Código de juego no válido', 'error');
+      return;
+    }
+
+    // Optional: Add loading state
+    this.isLoading = true;
 
     this.waitingRoomService.startGame(this.gameCode).subscribe({
-
       next: (response) => {
         console.log('Juego iniciado correctamente:', response);
-        console.log('Enviando solicitud para iniciar el juego con gameCode:', this.gameCode);
 
-        this.router.navigate(['/game-table', this.gameId]);
+        // Ensure gameId is available, use from response if not already set
+        const gameId = response.gameId || this.gameId;
+
+        if (!gameId) {
+          this.handleError('No se pudo obtener el ID del juego');
+          return;
+        }
+
+        // Navigate to game table with both gameId and gameCode
+        this.router.navigate(['/game-table', gameId, this.gameCode]);
       },
       error: (error) => {
-        console.log('Enviando solicitud para iniciar el juego con gameCode:', this.gameCode);
-
         console.error('Error al iniciar el juego:', error);
-        this.handleError('No se pudo iniciar el juego: ' + error.message);
+
+        // More detailed error handling
+        const errorMessage = error.error?.message || error.message || 'Error desconocido';
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al iniciar el juego',
+          text: errorMessage,
+          confirmButtonText: 'Aceptar'
+        });
+      },
+      complete: () => {
+        // Always reset loading state
+        this.isLoading = false;
       }
     });
   }
@@ -192,6 +219,5 @@ export class SalaEsperaComponent implements OnInit, OnDestroy {
     }
   }
 }
-
 
 
