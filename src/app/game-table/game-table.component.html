@@ -1,96 +1,119 @@
 <!-- game-table.component.html -->
-<div class="game-container" *ngIf="!isLoading && !error">
+<div class="game-container bg-custom-dark text-custom-gray p-6 rounded-xl space-y-6" *ngIf="!isLoading && !error">
   <!-- Cabecera de la partida -->
-  <div class="game-header">
-    <h2>Código de sala: {{ gameCode }}</h2>
-    <div class="round-info">
+  <div class="game-header bg-custom-blue/90 text-custom-white p-4 rounded-lg shadow-lg">
+    <h2 class="text-2xl font-bold mb-2">Código de sala: {{ gameCode }}</h2>
+    <div class="round-info text-custom-turquoise font-semibold">
       Ronda actual: {{ gameState.rounds[gameState.currentRound]?.name || 'N/A' }}
-      <span *ngIf="gameState.status === 'ended'"> (Finalizada)</span>
+      <span *ngIf="gameState.status === 'ended'" class="text-red-400"> (Finalizada)</span>
     </div>
   </div>
 
   <!-- Lista de jugadores -->
-  <div class="players-list">
-    <div class="player"
+  <div class="players-list grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="player bg-custom-blue/90 hover:bg-custom-blue text-custom-white p-4 rounded-lg transition-all"
          *ngFor="let player of players"
-         [ngClass]="{ 'current-turn': player.username === currentTurn }">
-      <div class="player-name">
+         [ngClass]="{ 'border-2 border-custom-turquoise': player.username === currentTurn }">
+      <div class="player-name font-bold text-lg">
         {{ player.username }}
-        <span *ngIf="player.username === authService.getUsername()"> (Tú)</span>
+        <span *ngIf="player.username === authService.getUsername()" class="text-custom-turquoise"> (Tú)</span>
       </div>
-      <div class="tokens">
+      <div class="tokens text-custom-gray">
         Fichas restantes: {{ 12 - (gameState.tokensUsed?.[player.username] || 0) }}
       </div>
     </div>
   </div>
 
   <!-- Panel de acciones -->
-  <div class="action-panel" *ngIf="gameState.status === 'in_progress'">
-    <div *ngIf="isMyTurn" class="current-turn-alert">
+  <div class="action-panel bg-custom-blue/90 p-4 rounded-lg space-y-6" *ngIf="gameState.status === 'in_progress'">
+    <div *ngIf="isMyTurn" class="current-turn-alert bg-custom-turquoise text-custom-dark p-3 rounded-lg font-bold text-center">
       ¡Es tu turno!
     </div>
 
     <!-- Reclamar ronda -->
-    <div class="action-section" *ngIf="!roundClaimed">
-      <h3>Reclamar Ronda</h3>
+    <div class="action-section space-y-4" *ngIf="!roundClaimed">
+      <h3 class="text-custom-white font-semibold text-lg">Reclamar Ronda</h3>
       <input type="number"
+             class="w-full bg-custom-dark/80 text-custom-white p-2 rounded border border-custom-gray focus:outline-none focus:border-custom-turquoise"
              [(ngModel)]="claimedTokenCount"
              min="1"
              [max]="remainingTokens"
              placeholder="Fichas a usar">
-      <button (click)="claimRound()"
+      <button class="w-full bg-custom-turquoise text-custom-dark px-4 py-2 rounded hover:bg-opacity-80 transition-all font-semibold"
+              (click)="claimRound()"
               [disabled]="claimedTokenCount < 1 || claimedTokenCount > remainingTokens">
         Reclamar
       </button>
     </div>
 
     <!-- Validar/Rechazar -->
-    <div class="action-section" *ngIf="roundClaimed && isMyTurn">
-      <h3>Validar Ronda</h3>
-      <button (click)="approveRound(true)">Aprobar</button>
-      <button (click)="approveRound(false)">Rechazar</button>
+    <div class="action-section space-y-4" *ngIf="roundClaimed && isMyTurn">
+      <h3 class="text-custom-white font-semibold text-lg">Validar Ronda</h3>
+      <div class="flex gap-4">
+        <button class="flex-1 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-all"
+                (click)="approveRound(true)">Aprobar</button>
+        <button class="flex-1 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-all"
+                (click)="approveRound(false)">Rechazar</button>
+      </div>
     </div>
 
     <!-- Declarar cartas -->
-    <div class="action-section" *ngIf="isMyTurn">
-      <h3>Declarar Cartas</h3>
-      <div *ngFor="let card of ['2','3','4','5','6','7','8','9','10','J','Q','K','A','Joker']">
-        <label>
-          {{ card }}:
+    <div class="action-section space-y-4">
+      <h3 class="text-custom-white font-semibold text-lg">Declarar Cartas</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div *ngFor="let card of ['2','3','4','5','6','7','8','9','10','J','Q','K','A','Joker']"
+             class="flex items-center gap-2">
+          <label class="text-custom-gray flex-1">{{ card }}:</label>
           <input type="number"
+                 class="w-16 bg-custom-dark/80 text-custom-white p-1 rounded border border-custom-gray text-center"
                  [(ngModel)]="currentDeclarations[card]"
                  min="0"
                  max="12">
-        </label>
+        </div>
       </div>
-      <button (click)="declareCards()">Enviar Declaración</button>
+      <button class="w-full bg-custom-turquoise text-custom-dark px-4 py-2 rounded hover:bg-opacity-80 transition-all font-semibold"
+              (click)="declareCards()">Enviar Declaración</button>
     </div>
   </div>
 
   <!-- Historial de rondas -->
-  <div class="round-history">
-    <h3>Historial de Rondas</h3>
-    <table>
-      <tr *ngFor="let round of roundHistory">
-        <td>{{ round.name }}</td>
-        <td>Ganador: {{ round.winner || 'N/A' }}</td>
-        <td>Puntos: {{ round.points | json }}</td>
+  <div class="round-history bg-custom-blue/90 p-4 rounded-lg">
+    <h3 class="text-custom-white font-semibold text-lg mb-4">Historial de Rondas</h3>
+    <table class="w-full">
+      <thead class="bg-custom-dark/80 text-custom-white">
+      <tr>
+        <th class="p-2 text-left">Ronda</th>
+        <th class="p-2 text-left">Ganador</th>
+        <th class="p-2 text-left">Puntos</th>
       </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let round of roundHistory" class="border-t border-custom-gray/30">
+        <td class="p-2 text-custom-turquoise">{{ round.name }}</td>
+        <td class="p-2 text-custom-gray">{{ round.winner || 'N/A' }}</td>
+        <td class="p-2 text-custom-gray">{{ round.points | json }}</td>
+      </tr>
+      </tbody>
     </table>
   </div>
 
   <!-- Resultado final -->
-  <div class="game-result" *ngIf="gameState.status === 'ended'">
-    <h2>¡Partida Finalizada!</h2>
-    <div>Ganador: {{ winner }}</div>
-    <div>Detalles:</div>
-    <pre>{{ gameState.results | json }}</pre>
+  <div class="game-result bg-custom-blue/90 text-center p-6 rounded-lg" *ngIf="gameState.status === 'ended'">
+    <h2 class="text-2xl font-bold text-custom-turquoise mb-4">¡Partida Finalizada!</h2>
+    <div class="text-lg text-custom-white mb-2">Ganador: {{ winner }}</div>
+    <div class="text-custom-white mb-4">Detalles:</div>
+    <pre class="bg-custom-dark/80 text-custom-gray p-4 rounded text-left overflow-auto">{{ gameState.results | json }}</pre>
   </div>
 
   <!-- Botón de abandonar -->
-  <button class="leave-button" (click)="leaveGameTable()">Abandonar Partida</button>
+  <button class="leave-button w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-all"
+          (click)="leaveGameTable()">Abandonar Partida</button>
 </div>
 
 <!-- Estados de carga y error -->
-<div *ngIf="isLoading" class="loading">Cargando partida...</div>
-<div *ngIf="error" class="error">{{ error }}</div>
+<div *ngIf="isLoading" class="loading text-custom-turquoise text-2xl text-center p-8 animate-pulse">
+  Cargando partida...
+</div>
+<div *ngIf="error" class="error text-red-400 text-xl text-center p-8">
+  {{ error }}
+</div>

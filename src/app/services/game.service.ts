@@ -39,7 +39,7 @@ export interface Game {
   providedIn: 'root'
 })
 export class GameService {
-  private apiUrl = 'http://localhost:3000/api/v1/games';
+  private apiUrl = 'http://34.30.151.163:3000/api/v1/games';
 
   constructor(
     private http: HttpClient,

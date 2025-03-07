@@ -27,7 +27,7 @@ interface EmailCheckResponse {
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:3000/api/v1';
+  private apiUrl = 'http://34.30.151.163:3000/api/v1';
   private readonly TOKEN_KEY = 'token';
   private readonly USER_KEY = 'user';
 

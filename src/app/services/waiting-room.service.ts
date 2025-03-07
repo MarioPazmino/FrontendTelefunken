@@ -31,7 +31,7 @@ export interface WaitingRoomStatus {
   providedIn: 'root',
 })
 export class WaitingRoomService {
-  private apiUrl = 'http://localhost:3000/api/v1/waiting-room';
+  private apiUrl = 'http://34.30.151.163:3000/api/v1/waiting-room';
 
   constructor(
     private http: HttpClient,

@@ -108,6 +108,7 @@ export class GameTableComponent implements OnInit, OnDestroy {
     );
   }
 
+
   private loadRoundHistory(): void {
     this.gameSessionService.getRoundHistory(this.gameId, this.gameCode)
       .subscribe({

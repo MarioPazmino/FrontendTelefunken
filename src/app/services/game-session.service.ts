@@ -15,9 +15,9 @@ interface GameAction {
 })
 export class GameSessionService implements OnDestroy {
   private socket!: Socket;
-  private apiUrl = 'http://localhost:3000'; // URL del servidor backend
+  private apiUrl = 'http://34.30.151.163:3000'; // URL del servidor backend
   private disconnectSubject = new Subject<void>();
-  private apiUrl1 = 'http://localhost:3000/api/v1/game-session';
+  private apiUrl1 = 'http://34.30.151.163:3000/api/v1/game-session';
   constructor(
     private authService: AuthService,
     private http: HttpClient
@@ -133,7 +133,6 @@ export class GameSessionService implements OnDestroy {
   getCurrentRoundState(gameId: string, gameCode: string): Observable<any> {
     return this.http.get(`${this.apiUrl1}/${gameId}/${gameCode}/current-round`);
   }
-
 
   onRoundClaimed(): Observable<{
     username: string,
