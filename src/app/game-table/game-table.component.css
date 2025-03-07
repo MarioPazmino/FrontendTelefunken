@@ -1,18 +1,82 @@
-/* sala-espera.component.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  --color-primary: #02CDAD;       /* Color principal */
-  --color-background: #001512;    /* Fondo oscuro */
-  --color-card: #04272D;          /* Fondo de tarjetas */
-  --color-text-muted: #8D9997;    /* Texto secundario */
-  --color-text: #FFFFFF;          /* Texto principal */
-  --color-border: #02CDAD;        /* Bordes destacados */
+/* game-table.component.css */
+.game-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #f5f5f5;
+  border-radius: 10px;
 }
 
+.game-header {
+  margin-bottom: 20px;
+  text-align: center;
+}
 
-body, html {
-  background-color: #001512 !important;
+.players-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.player {
+  background: white;
+  padding: 10px;
+  border-radius: 5px;
+  flex: 1 1 200px;
+  border: 2px solid #ddd;
+}
+
+.player.current-turn {
+  border-color: #4CAF50;
+  background: #e8f5e9;
+}
+
+.action-panel {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 5px;
+}
+
+.action-section {
+  margin-bottom: 15px;
+}
+
+.round-history table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.round-history td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.leave-button {
+  background: #f44336;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.current-turn-alert {
+  background: #4CAF50;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+
+.error {
+  color: red;
+  text-align: center;
+  margin: 20px;
+}
+
+.loading {
+  text-align: center;
+  margin: 20px;
 }
